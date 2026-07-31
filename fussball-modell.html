@@ -1,0 +1,1712 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fußball-Wahrscheinlichkeitsmodell</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0E1116; --panel:#161B22; --panel-2:#1D232D;
+    --line:#2A313C; --line-soft:#222932;
+    --ink:#E7EBF0; --muted:#8A94A2; --faint:#5A6472;
+    --amber:#F4B942; --cyan:#5EC8E5; --draw:#9AA6B4;
+    --good:#3FB27F; --bad:#E5654B;
+    --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+    --disp:"Space Grotesk",system-ui,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:var(--bg);color:var(--ink);font-family:var(--disp);line-height:1.5;-webkit-font-smoothing:antialiased;padding:18px 14px 60px}
+  .wrap{max-width:840px;margin:0 auto}
+
+  header.top{border-bottom:1px solid var(--line);padding-bottom:18px;margin-bottom:22px}
+  .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--amber);margin:0 0 8px}
+  h1{font-size:clamp(24px,6vw,36px);font-weight:700;margin:0;letter-spacing:-.02em}
+  .lede{color:var(--muted);font-size:14px;margin:8px 0 0;max-width:62ch}
+
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:16px}
+  .panel-h{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin:0 0 14px;flex-wrap:wrap}
+  .panel-h h2{font-size:13px;font-family:var(--mono);letter-spacing:.14em;text-transform:uppercase;font-weight:600;margin:0}
+  .panel-h .hint{font-size:11px;color:var(--faint);font-family:var(--mono)}
+
+  .grp{font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--faint);margin:14px 0 7px}
+  .grp:first-child{margin-top:0}
+  .lgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:7px}
+  .lbtn{font-family:var(--disp);font-size:12.5px;font-weight:500;text-align:left;
+    background:var(--panel-2);color:var(--ink);border:1px solid var(--line-soft);
+    border-radius:9px;padding:9px 11px;cursor:pointer;line-height:1.35}
+  .lbtn:hover{border-color:var(--amber)}
+  .lbtn.active{border-color:var(--amber);background:rgba(244,185,66,.12)}
+  .lbtn .cc{display:block;font-family:var(--mono);font-size:9.5px;color:var(--faint);letter-spacing:.1em;margin-top:2px}
+  .lbtn.cached .cc{color:var(--good)}
+  .lbtn.stale .cc{color:var(--amber)}
+
+  .statusbox{font-family:var(--mono);font-size:12px;margin-top:13px;padding:10px 12px;border-radius:9px;display:none;line-height:1.55}
+  .statusbox.show{display:block}
+  .statusbox.info{background:var(--panel-2);color:var(--muted);border:1px solid var(--line-soft)}
+  .statusbox.ok{background:rgba(63,178,127,.1);color:var(--good);border:1px solid rgba(63,178,127,.3)}
+  .statusbox.err{background:rgba(229,101,75,.1);color:var(--bad);border:1px solid rgba(229,101,75,.3)}
+  .statusbox b{color:var(--ink)}
+  .statusbox.ok b{color:var(--good)}
+
+  .btn{display:inline-flex;align-items:center;gap:8px;justify-content:center;
+    font-family:var(--mono);font-size:12.5px;font-weight:600;letter-spacing:.05em;
+    background:var(--amber);color:#1a1205;border:none;border-radius:10px;padding:11px 15px;cursor:pointer}
+  .btn.sec{background:var(--panel-2);color:var(--ink);border:1px solid var(--line)}
+  .btn.mini{font-size:11px;padding:7px 10px}
+  .btn:disabled{opacity:.55;cursor:wait}
+  .spinner{width:13px;height:13px;border:2px solid rgba(26,18,5,.3);border-top-color:#1a1205;border-radius:50%;animation:spin .8s linear infinite;display:none}
+  .btn.loading .spinner{display:inline-block}
+  .btn.sec .spinner{border-color:rgba(231,235,240,.25);border-top-color:var(--ink)}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  @media (prefers-reduced-motion:reduce){.spinner{animation-duration:2s}.fill{transition:none}}
+
+  .selbox{display:none;margin-top:13px}
+  .selbox.show{display:block}
+  .kfield span.lb{display:block;font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+  .kfield select,.kfield input{width:100%;font-family:var(--disp);font-size:13.5px;background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:9px;padding:10px 11px}
+  .kfield select:focus,.kfield input:focus{outline:2px solid var(--amber);outline-offset:1px;border-color:transparent}
+  .setbtns{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:9px}
+  @media(max-width:520px){.setbtns{grid-template-columns:1fr}}
+  .setbtn{font-family:var(--mono);font-size:11.5px;font-weight:600;border-radius:9px;padding:11px 8px;cursor:pointer;border:1px solid var(--line);background:var(--panel-2);color:var(--ink)}
+  .setbtn.h{border-color:rgba(244,185,66,.45)}
+  .setbtn.h:hover{background:rgba(244,185,66,.12)}
+  .setbtn.a{border-color:rgba(94,200,229,.45)}
+  .setbtn.a:hover{background:rgba(94,200,229,.12)}
+  .slots{font-family:var(--mono);font-size:11.5px;color:var(--muted);margin-top:10px;padding:9px 11px;background:var(--panel-2);border:1px solid var(--line-soft);border-radius:9px;line-height:1.6}
+  .slots .sh{color:var(--amber)} .slots .sa{color:var(--cyan)} .slots b{color:var(--ink);font-weight:600}
+
+  .teams{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media(max-width:520px){.teams{grid-template-columns:1fr}}
+  .team{border:1px solid var(--line-soft);border-radius:11px;padding:13px;background:var(--panel-2)}
+  .team .tag{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;display:flex;align-items:center;gap:7px;margin-bottom:12px}
+  .dot{width:9px;height:9px;border-radius:50%;flex:none}
+  .dot.home{background:var(--amber)} .dot.away{background:var(--cyan)}
+  .fieldname{font-size:14px;font-weight:600;background:transparent;border:none;color:var(--ink);width:100%;font-family:var(--disp);padding:0 0 10px;border-bottom:1px dashed var(--line);margin-bottom:12px}
+  .fieldname:focus{outline:none;border-bottom-color:var(--amber)}
+  .row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:9px}
+  .row label{font-size:12.5px;color:var(--muted)}
+  .row input[type=number]{width:74px;font-family:var(--mono);font-size:15px;background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:7px 9px;text-align:right}
+  .row input:focus{outline:2px solid var(--amber);outline-offset:1px;border-color:transparent}
+
+  details.fine{margin-top:10px;border-top:1px dashed var(--line);padding-top:9px}
+  details.fine summary{font-family:var(--mono);font-size:11px;color:var(--muted);cursor:pointer;list-style:none;padding:2px 0}
+  details.fine summary::-webkit-details-marker{display:none}
+  details.fine summary:before{content:"▸ ";color:var(--faint)}
+  details.fine[open] summary:before{content:"▾ "}
+  details.fine summary:hover{color:var(--ink)}
+  .finegrp{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);margin:10px 0 6px}
+  .row.sm input[type=number]{width:62px;font-size:13px;padding:5px 7px}
+  .row.sm label{font-size:11.5px}
+
+  .params{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+  @media(max-width:520px){.params{grid-template-columns:1fr}}
+  .prow{display:flex;align-items:center;gap:10px;padding:9px 12px;background:var(--panel-2);border:1px solid var(--line-soft);border-radius:10px;flex-wrap:wrap}
+  .prow label{font-size:12px;color:var(--muted);flex:1 1 120px}
+  .prow input[type=range]{flex:2 1 110px;accent-color:var(--amber);min-width:90px}
+  .prow .val{font-family:var(--mono);font-size:13.5px;font-weight:600;color:var(--amber);min-width:46px;text-align:right}
+
+  .xg{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
+  .xgcard{border-radius:11px;padding:13px 15px;background:var(--panel-2);border:1px solid var(--line-soft)}
+  .xgcard .k{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+  .xgcard .v{font-family:var(--mono);font-size:30px;font-weight:600;margin-top:4px}
+  .xgcard.home .v{color:var(--amber)} .xgcard.away .v{color:var(--cyan)}
+
+  .outcome{margin-bottom:13px}
+  .outcome:last-child{margin-bottom:0}
+  .outcome .head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;gap:10px;flex-wrap:wrap}
+  .outcome .name{font-size:13px;font-weight:600}
+  .outcome .figs{font-family:var(--mono);font-size:12.5px;color:var(--muted)}
+  .outcome .figs b{color:var(--ink);font-weight:600}
+  .track{height:11px;background:var(--bg);border-radius:6px;overflow:hidden;border:1px solid var(--line-soft);position:relative}
+  .fill{height:100%;border-radius:6px 0 0 6px;transition:width .35s cubic-bezier(.4,0,.2,1)}
+  .fill.home{background:var(--amber)} .fill.draw{background:var(--draw)} .fill.away{background:var(--cyan)}
+  .mark{position:absolute;top:-2px;bottom:-2px;width:2px;background:var(--ink);opacity:.65;display:none}
+
+  .split{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
+  @media(max-width:520px){.split{grid-template-columns:1fr}}
+  .stat{background:var(--panel-2);border:1px solid var(--line-soft);border-radius:10px;padding:11px 13px}
+  .stat .k{font-size:11px;color:var(--muted)}
+  .stat .v{font-family:var(--mono);font-size:16px;font-weight:600;margin-top:3px}
+
+  .heat-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:4px}
+  .grid{display:grid;grid-template-columns:auto repeat(7,1fr);gap:3px;min-width:340px;max-width:470px}
+  .cell{aspect-ratio:1;border-radius:5px;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:10px}
+  .cell.data{background:var(--panel-2)}
+  .cell.axis{background:transparent;color:var(--faint)}
+  .cell.peak{outline:2px solid var(--amber);outline-offset:-2px;font-weight:600}
+  .axislabels{display:flex;justify-content:space-between;font-family:var(--mono);font-size:10px;color:var(--faint);margin-top:8px;letter-spacing:.1em;text-transform:uppercase}
+  .cslist{display:grid;grid-template-columns:repeat(auto-fit,minmax(112px,1fr));gap:7px;margin-top:14px}
+  .cs{background:var(--panel-2);border:1px solid var(--line-soft);border-radius:9px;padding:8px 10px;font-family:var(--mono);font-size:11.5px}
+  .cs b{font-size:14px;color:var(--amber);font-weight:600}
+  .cs .f{color:var(--faint);font-size:10.5px}
+
+  .minodds{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+  @media(max-width:520px){.minodds{grid-template-columns:1fr}}
+  .minodd{background:var(--panel-2);border:1px solid var(--line-soft);border-radius:10px;padding:12px 13px;text-align:center}
+  .minodd .k{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+  .minodd .v{font-family:var(--mono);font-size:24px;font-weight:600;margin-top:5px}
+  .minodd.home .v{color:var(--amber)} .minodd.draw .v{color:var(--draw)} .minodd.away .v{color:var(--cyan)}
+  .minodd .sub{font-size:10.5px;color:var(--faint);font-family:var(--mono);margin-top:4px}
+
+  .odds-in{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-bottom:6px}
+  .oddscol{text-align:center}
+  .oddscol span{display:block;font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+  .oddscol input{width:100%;font-family:var(--mono);font-size:16px;font-weight:600;text-align:center;background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:9px;padding:9px 4px}
+  .oddscol input:focus{outline:2px solid var(--amber);outline-offset:1px;border-color:transparent}
+  .note{font-family:var(--mono);font-size:11.5px;color:var(--muted);text-align:center;margin:12px 0 16px;padding:9px;background:var(--panel-2);border-radius:8px;border:1px solid var(--line-soft);line-height:1.55}
+  .note b{color:var(--ink)}
+  .note.left{text-align:left}
+
+  .kellyctl{display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px;margin-bottom:14px}
+  @media(max-width:520px){.kellyctl{grid-template-columns:1fr}}
+
+  .verdicts{display:grid;gap:8px}
+  .verdict{padding:12px 13px;border-radius:10px;border:1px solid var(--line-soft);background:var(--panel-2)}
+  .verdict.good{border-color:rgba(63,178,127,.3)}
+  .verdict .toprow{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+  .verdict .lbl{font-family:var(--mono);font-size:12px;font-weight:600}
+  .verdict .mid{font-family:var(--mono);font-size:11px;color:var(--muted);line-height:1.5;margin-top:5px}
+  .verdict .mid b{color:var(--ink);font-weight:600}
+  .verdict .kelly{font-family:var(--mono);font-size:11.5px;margin-top:7px;padding-top:7px;border-top:1px dashed var(--line);line-height:1.5}
+  .verdict.good .kelly b{color:var(--good)}
+  .badge{font-family:var(--mono);font-size:11px;font-weight:600;padding:5px 10px;border-radius:20px;white-space:nowrap}
+  .badge.good{background:rgba(63,178,127,.14);color:var(--good);border:1px solid rgba(63,178,127,.35)}
+  .badge.bad{background:rgba(229,101,75,.12);color:var(--bad);border:1px solid rgba(229,101,75,.3)}
+
+  .mrow{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;padding:10px 12px;border:1px solid var(--line-soft);border-radius:10px;background:var(--panel-2);margin-bottom:7px}
+  .mrow.good{border-color:rgba(63,178,127,.3)}
+  .mrow .mlbl{flex:1 1 150px;min-width:130px}
+  .mrow .mlbl .n{font-size:13px;font-weight:600}
+  .mrow .mlbl .s{font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:2px}
+  .mrow .mlbl .s b{color:var(--ink)}
+  .mrow input.modds{width:76px;font-family:var(--mono);font-size:14px;font-weight:600;text-align:center;background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:8px 4px}
+  .mrow input.modds:focus{outline:2px solid var(--amber);outline-offset:1px;border-color:transparent}
+  .mrow .mkelly{flex-basis:100%;font-family:var(--mono);font-size:11px;color:var(--muted);border-top:1px dashed var(--line);padding-top:6px;line-height:1.5}
+  .mrow .mkelly b{color:var(--good);font-weight:600}
+  .inline-inputs{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:9px;margin-bottom:12px}
+
+  .pastebox{margin-top:13px;padding:13px;background:var(--panel-2);border:1px solid var(--line-soft);border-radius:11px}
+  .pastebox textarea{width:100%;min-height:110px;font-family:var(--mono);font-size:11.5px;line-height:1.5;
+    background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:9px;padding:10px;resize:vertical}
+  .pastebox textarea:focus{outline:2px solid var(--amber);outline-offset:1px;border-color:transparent}
+  .pastebox .ph{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+  .pastebox .hintline{font-family:var(--mono);font-size:11px;color:var(--faint);line-height:1.55;margin-top:8px}
+  .toggle{font-family:var(--mono);font-size:11.5px;color:var(--muted);background:none;border:none;
+    padding:8px 0;cursor:pointer;text-decoration:underline;text-underline-offset:3px;display:block;text-align:left}
+  .toggle:hover{color:var(--ink)}
+
+  table.jt{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:11.5px}
+  table.jt th{text-align:left;color:var(--faint);font-weight:500;font-size:10px;letter-spacing:.1em;text-transform:uppercase;padding:6px 6px;border-bottom:1px solid var(--line)}
+  table.jt td{padding:7px 6px;border-bottom:1px solid var(--line-soft);vertical-align:middle}
+  table.jt td.r{text-align:right}
+  .jbtn{font-family:var(--mono);font-size:10.5px;padding:4px 7px;border-radius:6px;border:1px solid var(--line);background:var(--bg);color:var(--muted);cursor:pointer;margin-right:3px}
+  .jbtn:hover{color:var(--ink);border-color:var(--amber)}
+  .jbtn.on.w{background:rgba(63,178,127,.18);color:var(--good);border-color:rgba(63,178,127,.4)}
+  .jbtn.on.l{background:rgba(229,101,75,.15);color:var(--bad);border-color:rgba(229,101,75,.4)}
+  .jstats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin-bottom:12px}
+  .jstat{background:var(--panel-2);border:1px solid var(--line-soft);border-radius:9px;padding:9px 11px}
+  .jstat .k{font-size:10.5px;color:var(--muted);font-family:var(--mono)}
+  .jstat .v{font-family:var(--mono);font-size:17px;font-weight:600;margin-top:2px}
+  .scroll-x{overflow-x:auto}
+  footer.disc{margin-top:26px;padding-top:18px;border-top:1px solid var(--line);color:var(--faint);font-size:12px;line-height:1.6}
+  footer.disc b{color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <p class="eyebrow">Dixon-Coles · Regression · Kelly · Journal</p>
+    <h1>Fußball-Wahrscheinlichkeitsmodell</h1>
+    <p class="lede">Liga antippen, beide Teams setzen. Die Tabelle wird bei jedem Antippen frisch geladen — aus OpenLigaDB (deutsche Ligen) oder direkt aus dem Wikipedia-Saisonartikel. Das Modell rechnet mit Angriffs- und Abwehrstärke relativ zum Ligaschnitt, korrigiert knappe Ergebnisse nach Dixon-Coles, zieht dünne Stichproben zum Mittel und zeigt für jeden Markt, ob eine Quote rechnerisch Value hat.</p>
+  </header>
+
+  <!-- 1 · LIGA -->
+  <section class="panel">
+    <div class="panel-h"><h2>1 · Wettbewerb wählen</h2><span class="hint" id="cacheHint">–</span></div>
+    <div id="leagueGrid"></div>
+    <div class="statusbox" id="tblStatus"></div>
+    <button type="button" class="toggle" id="pasteToggle">▸ Tabelle stattdessen selbst einfügen (ohne Abruf)</button>
+    <div class="pastebox" id="pasteBox" style="display:none">
+      <div class="ph">Tabelle hier einfügen</div>
+      <textarea id="pasteArea" placeholder="Aus Wikipedia oder einer Ligaseite kopieren und einfügen, z. B.:&#10;1  Celtic  25  20  3  2  60  15  +45  63&#10;2  Rangers  25  16  5  4  52  20  +32  53&#10;&#10;Oder einfach:  Celtic  25  60  15"></textarea>
+      <div style="display:flex;gap:8px;margin-top:9px;flex-wrap:wrap">
+        <button class="btn" id="parseBtn">Tabelle übernehmen</button>
+      </div>
+      <div class="hintline">Erkannt werden Zeilen mit Teamname und Zahlen. Das Standardformat (Platz · Team · Sp · S · U · N · Tore · Gegentore · Diff · Punkte) wird über die Prüfung Sp = S+U+N automatisch zugeordnet — auch bei Ziffern im Vereinsnamen (1. FC Köln, Schalke 04). Alternativ genügt Team · Spiele · Tore · Gegentore, auch „60:15“ als Torangabe. Braucht keinerlei Netzzugriff — der sichere Weg, wenn der Abruf scheitert oder du eigene Zahlen nutzen willst.</div>
+    </div>
+    <div class="selbox" id="selBox">
+      <div class="kfield"><span class="lb">Team aus der Tabelle</span><select id="selTeam"></select></div>
+      <div class="setbtns">
+        <button type="button" class="setbtn h" id="setHomeBtn">↓ als Heimteam setzen</button>
+        <button type="button" class="setbtn a" id="setAwayBtn">↓ als Auswärtsteam setzen</button>
+      </div>
+      <div class="slots">
+        <span class="sh">Heim:</span> <b id="slotH">–</b><br>
+        <span class="sa">Auswärts:</span> <b id="slotA">–</b>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+        <button class="btn sec" id="refreshBtn"><span class="spinner"></span>Tabelle neu laden</button>
+        <button class="btn sec" id="clearBtn">Speicher leeren</button>
+      </div>
+    </div>
+    <button type="button" class="toggle" id="backupToggle">▸ Sicherung: alle Daten exportieren / einlesen</button>
+    <div class="pastebox" id="backupBox" style="display:none">
+      <div class="ph">Sicherung (Tabellen + Journal)</div>
+      <textarea id="backupArea" placeholder="Hier erscheint der Export. Zum Einlesen: gesicherten Text einfügen und „Einlesen“ drücken."></textarea>
+      <div style="display:flex;gap:8px;margin-top:9px;flex-wrap:wrap">
+        <button class="btn sec mini" id="exportBtn">Exportieren</button>
+        <button class="btn sec mini" id="importBtn">Einlesen</button>
+      </div>
+      <div class="hintline">Der Speicher hängt am Browser bzw. an dieser Seite. Vor einem Gerätewechsel exportieren, sonst sind die Tabellen und das Journal weg.</div>
+    </div>
+  </section>
+
+  <div id="calcArea">
+
+  <!-- 2 · WERTE -->
+  <section class="panel">
+    <div class="panel-h"><h2>2 · Werte &amp; Modellparameter</h2><span class="hint">alles überschreibbar</span></div>
+    <div class="teams">
+      <div class="team">
+        <div class="tag"><span class="dot home"></span>Heim</div>
+        <input class="fieldname" id="homeName" value="Heimteam" aria-label="Name Heimteam">
+        <div class="row"><label for="homeFor">Tore/Spiel</label><input type="number" id="homeFor" value="1.60" min="0" step="0.05"></div>
+        <div class="row"><label for="homeAg">Gegentore/Spiel</label><input type="number" id="homeAg" value="1.20" min="0" step="0.05"></div>
+        <div class="row"><label for="homePld">Spiele (Stichprobe)</label><input type="number" id="homePld" value="0" min="0" step="1"></div>
+        <div class="row"><label for="homeAvg">Ligaschnitt</label><input type="number" id="homeAvg" value="1.40" min="0.1" step="0.05"></div>
+        <div class="row"><label for="homeStr">Ligastärke</label><input type="number" id="homeStr" value="1.00" min="0.3" max="3" step="0.01"></div>
+        <details class="fine">
+          <summary>Feinjustierung: Heimbilanz &amp; Form</summary>
+          <div class="finegrp">Nur Heimspiele (Summen)</div>
+          <div class="row sm"><label for="homeSpPld">Spiele</label><input type="number" id="homeSpPld" value="0" min="0" step="1"></div>
+          <div class="row sm"><label for="homeSpFor">Tore</label><input type="number" id="homeSpFor" value="0" min="0" step="1"></div>
+          <div class="row sm"><label for="homeSpAg">Gegentore</label><input type="number" id="homeSpAg" value="0" min="0" step="1"></div>
+          <div class="finegrp">Aus Einzelspielen gefittet (0 = aus)</div>
+          <div class="row sm"><label for="homeFitA" title="Angriffsstärke gegen die tatsächlichen Gegner">Angriff</label><input type="number" id="homeFitA" value="0" min="0" max="6" step="0.01"></div>
+          <div class="row sm"><label for="homeFitD" title="Abwehrstärke gegen die tatsächlichen Gegner">Abwehr</label><input type="number" id="homeFitD" value="0" min="0" max="6" step="0.01"></div>
+          <div class="finegrp">Letzte Spiele (Summen)</div>
+          <div class="row sm"><label for="homeFmPld">Spiele</label><input type="number" id="homeFmPld" value="0" min="0" step="1"></div>
+          <div class="row sm"><label for="homeFmFor">Tore</label><input type="number" id="homeFmFor" value="0" min="0" step="1"></div>
+          <div class="row sm"><label for="homeFmAg">Gegentore</label><input type="number" id="homeFmAg" value="0" min="0" step="1"></div>
+        </details>
+      </div>
+      <div class="team">
+        <div class="tag"><span class="dot away"></span>Auswärts</div>
+        <input class="fieldname" id="awayName" value="Auswärtsteam" aria-label="Name Auswärtsteam">
+        <div class="row"><label for="awayFor">Tore/Spiel</label><input type="number" id="awayFor" value="1.40" min="0" step="0.05"></div>
+        <div class="row"><label for="awayAg">Gegentore/Spiel</label><input type="number" id="awayAg" value="1.30" min="0" step="0.05"></div>
+        <div class="row"><label for="awayPld">Spiele (Stichprobe)</label><input type="number" id="awayPld" value="0" min="0" step="1"></div>
+        <div class="row"><label for="awayAvg">Ligaschnitt</label><input type="number" id="awayAvg" value="1.40" min="0.1" step="0.05"></div>
+        <div class="row"><label for="awayStr">Ligastärke</label><input type="number" id="awayStr" value="1.00" min="0.3" max="3" step="0.01"></div>
+        <details class="fine">
+          <summary>Feinjustierung: Auswärtsbilanz &amp; Form</summary>
+          <div class="finegrp">Nur Auswärtsspiele (Summen)</div>
+          <div class="row sm"><label for="awaySpPld">Spiele</label><input type="number" id="awaySpPld" value="0" min="0" step="1"></div>
+          <div class="row sm"><label for="awaySpFor">Tore</label><input type="number" id="awaySpFor" value="0" min="0" step="1"></div>
+          <div class="row sm"><label for="awaySpAg">Gegentore</label><input type="number" id="awaySpAg" value="0" min="0" step="1"></div>
+          <div class="finegrp">Aus Einzelspielen gefittet (0 = aus)</div>
+          <div class="row sm"><label for="awayFitA" title="Angriffsstärke gegen die tatsächlichen Gegner">Angriff</label><input type="number" id="awayFitA" value="0" min="0" max="6" step="0.01"></div>
+          <div class="row sm"><label for="awayFitD" title="Abwehrstärke gegen die tatsächlichen Gegner">Abwehr</label><input type="number" id="awayFitD" value="0" min="0" max="6" step="0.01"></div>
+          <div class="finegrp">Letzte Spiele (Summen)</div>
+          <div class="row sm"><label for="awayFmPld">Spiele</label><input type="number" id="awayFmPld" value="0" min="0" step="1"></div>
+          <div class="row sm"><label for="awayFmFor">Tore</label><input type="number" id="awayFmFor" value="0" min="0" step="1"></div>
+          <div class="row sm"><label for="awayFmAg">Gegentore</label><input type="number" id="awayFmAg" value="0" min="0" step="1"></div>
+        </details>
+      </div>
+    </div>
+
+    <div class="params">
+      <div class="prow">
+        <label for="homeAdv">Heimvorteil</label>
+        <input type="range" id="homeAdv" min="1" max="1.4" step="0.01" value="1.15">
+        <span class="val" id="homeAdvV">1.15</span>
+      </div>
+      <div class="prow">
+        <label for="rho" title="Dixon-Coles: korrigiert 0:0, 1:0, 0:1, 1:1">Dixon-Coles ρ</label>
+        <input type="range" id="rho" min="-0.20" max="0.05" step="0.01" value="-0.10">
+        <span class="val" id="rhoV">−0.10</span>
+      </div>
+      <div class="prow">
+        <label for="shrinkK" title="Wie stark dünne Stichproben zum Ligaschnitt gezogen werden">Regression K</label>
+        <input type="range" id="shrinkK" min="0" max="15" step="1" value="5">
+        <span class="val" id="shrinkKV">5</span>
+      </div>
+      <div class="prow">
+        <label for="formW">Formgewicht</label>
+        <input type="range" id="formW" min="0" max="0.8" step="0.05" value="0.30">
+        <span class="val" id="formWV">30 %</span>
+      </div>
+    </div>
+
+    <div class="xg">
+      <div class="xgcard home"><div class="k">Erwartete Tore Heim (λ)</div><div class="v" id="lamH">–</div></div>
+      <div class="xgcard away"><div class="k">Erwartete Tore Ausw. (λ)</div><div class="v" id="lamA">–</div></div>
+    </div>
+    <div class="note left" id="strengthNote">–</div>
+  </section>
+
+  <!-- 3 · WAHRSCHEINLICHKEIT -->
+  <section class="panel">
+    <div class="panel-h"><h2>3 · Modell-Wahrscheinlichkeit</h2><span class="hint">faire Quote = 1 / P</span></div>
+    <div class="outcome">
+      <div class="head"><span class="name">Heimsieg (1)</span><span class="figs"><b id="pH">–</b> · fair <span id="fH">–</span></span></div>
+      <div class="track"><div class="fill home" id="barH" style="width:0%"></div><div class="mark" id="mkH"></div></div>
+    </div>
+    <div class="outcome">
+      <div class="head"><span class="name">Unentschieden (X)</span><span class="figs"><b id="pD">–</b> · fair <span id="fD">–</span></span></div>
+      <div class="track"><div class="fill draw" id="barD" style="width:0%"></div><div class="mark" id="mkD"></div></div>
+    </div>
+    <div class="outcome">
+      <div class="head"><span class="name">Auswärtssieg (2)</span><span class="figs"><b id="pA">–</b> · fair <span id="fA">–</span></span></div>
+      <div class="track"><div class="fill away" id="barA" style="width:0%"></div><div class="mark" id="mkA"></div></div>
+    </div>
+    <div class="prow" style="margin-top:14px">
+      <label for="blendW" title="Mischt die Modellwerte mit den margenbereinigten Quoten">Markt-Anteil</label>
+      <input type="range" id="blendW" min="0" max="1" step="0.05" value="0.30">
+      <span class="val" id="blendWV">30 %</span>
+    </div>
+    <div class="note left" id="blendNote" style="margin-bottom:0">–</div>
+    <div class="split">
+      <div class="stat"><div class="k">Über 2,5 Tore</div><div class="v" id="pOver">–</div></div>
+      <div class="stat"><div class="k">Beide treffen</div><div class="v" id="pBtts">–</div></div>
+    </div>
+  </section>
+
+  <!-- 4 · MATRIX -->
+  <section class="panel">
+    <div class="panel-h"><h2>4 · Ergebnis-Matrix</h2><span class="hint" id="peakLbl">–</span></div>
+    <div class="heat-scroll"><div class="grid" id="grid"></div></div>
+    <div class="axislabels"><span>← Auswärtstore</span><span>Heimtore →</span></div>
+    <div class="cslist" id="csList"></div>
+  </section>
+
+  <!-- 5 · MINDESTQUOTEN -->
+  <section class="panel">
+    <div class="panel-h"><h2>5 · Ab welcher Quote?</h2><span class="hint">fair + Sicherheitspuffer</span></div>
+    <div class="minodds">
+      <div class="minodd home"><div class="k">Heimsieg ab</div><div class="v" id="mH">–</div><div class="sub">fair <span id="mHf">–</span></div></div>
+      <div class="minodd draw"><div class="k">Remis ab</div><div class="v" id="mD">–</div><div class="sub">fair <span id="mDf">–</span></div></div>
+      <div class="minodd away"><div class="k">Auswärtssieg ab</div><div class="v" id="mA">–</div><div class="sub">fair <span id="mAf">–</span></div></div>
+    </div>
+    <div class="prow" style="margin-top:12px">
+      <label for="buffer">Sicherheitspuffer</label>
+      <input type="range" id="buffer" min="0" max="0.3" step="0.01" value="0.10">
+      <span class="val" id="bufferV">10 %</span>
+    </div>
+    <div class="note left" style="margin-bottom:0">Unter der fairen Quote: laut Modell kein Value. Der Puffer ist eine Vorsichtsmarge für Modellfehler — er macht die Zahl vorsichtiger, nicht sicher.</div>
+  </section>
+
+  <!-- 6 · VALUE 1X2 -->
+  <section class="panel">
+    <div class="panel-h"><h2>6 · Value &amp; Einsatz</h2><span class="hint">Quoten eintragen</span></div>
+    <div class="odds-in">
+      <div class="oddscol"><span>Quote 1</span><input type="number" id="oH" min="1" step="0.01" placeholder="–"></div>
+      <div class="oddscol"><span>Quote X</span><input type="number" id="oD" min="1" step="0.01" placeholder="–"></div>
+      <div class="oddscol"><span>Quote 2</span><input type="number" id="oA" min="1" step="0.01" placeholder="–"></div>
+    </div>
+    <div class="note" id="marginNote">Trage die drei Quoten ein, um die Buchmacher-Marge zu sehen.</div>
+    <div class="kellyctl">
+      <div class="kfield"><span class="lb">Bankroll (€)</span><input type="number" id="bankroll" value="100" min="0" step="10"></div>
+      <div class="kfield"><span class="lb">Kelly-Anteil</span>
+        <select id="kellyFrac">
+          <option value="0.25" selected>Viertel-Kelly (empfohlen)</option>
+          <option value="0.5">Halb-Kelly</option>
+          <option value="1">Voll-Kelly (aggressiv)</option>
+        </select>
+      </div>
+      <div class="kfield"><span class="lb">Obergrenze je Wette</span>
+        <select id="kcap">
+          <option value="0.02">2 % der Bankroll</option>
+          <option value="0.05" selected>5 % der Bankroll</option>
+          <option value="0.1">10 % der Bankroll</option>
+        </select>
+      </div>
+    </div>
+    <div class="verdicts" id="verdicts"></div>
+  </section>
+
+  <!-- 7 · WEITERE MÄRKTE -->
+  <section class="panel">
+    <div class="panel-h"><h2>7 · Weitere Märkte</h2><span class="hint">Quote eintragen, wo du eine hast</span></div>
+    <div id="extraMarkets"></div>
+  </section>
+
+  <!-- 8 · TORSCHÜTZE -->
+  <section class="panel">
+    <div class="panel-h"><h2>8 · Torschütze</h2><span class="hint">grobe Näherung</span></div>
+    <div class="inline-inputs">
+      <div class="kfield"><span class="lb">Spieler</span><input id="sName" placeholder="Name (optional)"></div>
+      <div class="kfield"><span class="lb">Team</span><select id="teamSel"><option value="home" selected>Heimteam</option><option value="away">Auswärtsteam</option></select></div>
+      <div class="kfield"><span class="lb">Saisontore Spieler</span><input type="number" id="sGoals" value="8" min="0" step="1"></div>
+      <div class="kfield"><span class="lb">Saisontore Team</span><input type="number" id="tGoals" value="30" min="1" step="1"></div>
+      <div class="kfield"><span class="lb">Einsatzanteil</span><input type="number" id="sMin" value="1" min="0" max="1.2" step="0.05"></div>
+    </div>
+    <div id="scorerRow"></div>
+    <div class="note left" style="margin-bottom:0">Toranteil × erwartete Teamtore × Einsatzanteil → Poisson. Einsatzanteil 1 = spielt so viel wie im Saisonschnitt, 0,5 = halbe Spielzeit. Ignoriert Elfmeterrolle, Gegnerprofil und Aufstellungswechsel — die gröbste Zahl im Tool.</div>
+  </section>
+
+  <!-- 9 · WEITERKOMMEN -->
+  <section class="panel">
+    <div class="panel-h"><h2>9 · Weiterkommen (K.o.)</h2><span class="hint">inkl. Verlängerung &amp; Elfmeter</span></div>
+    <div class="inline-inputs">
+      <div class="kfield"><span class="lb">Modus</span><select id="qualMode"><option value="single" selected>Einzelspiel</option><option value="return">Rückspiel</option></select></div>
+      <div class="kfield"><span class="lb">Hinspiel: Tore Heimteam</span><input type="number" id="legH" value="0" min="0" step="1"></div>
+      <div class="kfield"><span class="lb">Hinspiel: Tore Auswärtsteam</span><input type="number" id="legA" value="0" min="0" step="1"></div>
+      <div class="kfield"><span class="lb">Verlängerung</span><select id="etOn"><option value="1" selected>ja, 30 Min. + Elfmeter</option><option value="0">nein (Remis = 50/50)</option></select></div>
+    </div>
+    <div id="qualRows"></div>
+    <div class="note left" id="qualNote" style="margin-bottom:0">–</div>
+  </section>
+
+  </div><!-- /calcArea -->
+
+  <!-- 10 · JOURNAL -->
+  <section class="panel">
+    <div class="panel-h"><h2>10 · Journal &amp; Kalibrierung</h2><span class="hint">der ehrliche Test</span></div>
+    <div class="jstats" id="jStats"></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+      <button class="btn sec mini" id="jAddBtn">Aktuelle Value-Wetten übernehmen</button>
+      <button class="btn sec mini" id="jCsvBtn">Als CSV anzeigen</button>
+      <button class="btn sec mini" id="jClearBtn">Journal leeren</button>
+    </div>
+    <div class="scroll-x"><table class="jt" id="jTable"></table></div>
+    <div class="note left" id="jCal" style="margin-top:14px">–</div>
+    <textarea id="jCsv" style="display:none;width:100%;min-height:120px;font-family:var(--mono);font-size:11px;background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:9px;padding:10px;margin-top:10px"></textarea>
+    <div class="note left" style="margin-bottom:0">Ein Modell ist erst dann etwas wert, wenn es sich über viele Wetten bewährt. Das Journal hält Modellwahrscheinlichkeit, Quote und Ausgang fest und rechnet daraus Trefferquote, Brier-Score und Rendite. Unter etwa 100 Einträgen sagt keine dieser Zahlen viel — Zufall dominiert.</div>
+  </section>
+
+  <footer class="disc">
+    <p><b>Woher die Stärken kommen.</b> Wo der Saisonartikel die Ergebnismatrix enthält, werden Angriff und Abwehr nicht aus Tabellensummen abgeleitet, sondern aus <i>jedem einzelnen Spiel</i> geschätzt (Maximum Likelihood, doppelte Poisson-Verteilung). Der Unterschied ist die Gegnerstärke: Wer bisher überwiegend gegen die Spitze gespielt hat, steht in der Tabelle schlechter da, als er ist. Bei einer fertig gespielten Runde, in der jeder gegen jeden zweimal angetreten ist, hebt sich das weitgehend auf — der Gewinn liegt in laufenden Saisons und in Ligen mit unausgeglichenem Spielplan (Conferences, Meisterrunden). Der Heimvorteil der Liga fällt bei derselben Schätzung mit ab und lässt sich per Klick übernehmen. Fehlt die Matrix, wird wie bisher aus Toren und Gegentoren gerechnet.</p>
+    <p><b>Wie gerechnet wird.</b> Angriffsstärke = Tore/Spiel ÷ Ligaschnitt, Abwehrstärke = Gegentore/Spiel ÷ Ligaschnitt. Beide werden bei kleiner Stichprobe zum Ligamittel gezogen (Regression K = Zahl der „gedachten Durchschnittsspiele“), danach optional mit Heim-/Auswärtsbilanz und Form gemischt. Erwartete Tore = Angriff × gegnerische Abwehr × Ligaschnitt × Heimvorteil × Ligastärke-Verhältnis. Daraus die Poisson-Verteilung über alle Ergebnisse, korrigiert nach Dixon-Coles: ρ &lt; 0 hebt 0:0 und 1:1 an und senkt 1:0 und 0:1 — unabhängige Poisson-Verteilungen unterschätzen knappe Ergebnisse systematisch.</p>
+    <p><b>Ligastärke.</b> Die voreingestellten Werte sind eine grobe Einordnung an UEFA-Koeffizienten (1,00 ≈ europäisches Mittelfeld) und keine gemessene Größe. Bei Duellen aus einer Liga heben sie sich weg. Bei internationalen Duellen sind sie die wichtigste, aber auch unsicherste Stellschraube — überschreib sie, wenn du es besser weißt.</p>
+    <p><b>Markt-Anteil.</b> Die Quoten des Buchmachers enthalten mehr Information als dieses Modell. Der Regler mischt die margenbereinigte Marktwahrscheinlichkeit (Potenzmethode) unter die Modellwerte. Bei 0 % siehst du das reine Modell — dann sind die ausgewiesenen Value-Chancen am größten und am unzuverlässigsten.</p>
+    <p><b>Aktualität.</b> Jedes Antippen einer Liga lädt die Tabelle neu. Deutsche Ligen kommen von OpenLigaDB, alle anderen direkt aus dem englischen Wikipedia-Saisonartikel; hat die laufende Saison dort noch keine Tabelle, wird die Vorsaison genommen und im Kopf angezeigt. Geladene Tabellen werden zwar gespeichert, aber nur als Rückfall benutzt, wenn der Abruf scheitert — und dann sichtbar mit Altersangabe. Es wird nie stillschweigend mit alten Zahlen gerechnet.</p>
+    <p><b>Grenzen.</b> Keine Aufstellungen, Verletzungen, Sperren, Motivation, Wetter, Reisebelastung. Kein echtes xG, nur erzielte Tore — xG sagt kommende Tore besser voraus als die tatsächlich gefallenen, ist aber frei und ohne Schlüssel nicht abrufbar. Auch keine Zeitgewichtung: die Ergebnismatrix verrät nicht, wann ein Spiel stattfand, deshalb zählt der Oktober so viel wie der März. Dafür gibt es die Form-Felder von Hand. Die Halbzeitwerte unterstellen einen festen Toranteil vor der Pause und ignorieren, dass Rückstände das Spiel öffnen. Automatisch geladene Zahlen können falsch oder veraltet sein; gleiche sie gegen die Quelle ab.</p>
+    <p><b>Kelly.</b> f = (p·q − 1)/(q − 1) maximiert das Kapitalwachstum, <i>wenn</i> p stimmt. Stimmt p nicht, empfiehlt Kelly zu viel. Darum Viertel-Kelly voreingestellt und hart gedeckelt.</p>
+    <p><b>Vorbehalt.</b> Der Buchmacher hat 4–7 % Marge eingebaut; die muss ein Modell erst schlagen, bevor Value überhaupt beginnt. Ein Poisson-Modell — auch ein gut gebautes — schafft das nicht zuverlässig. Die Ausgabe ist ein Denkwerkzeug zur Einschätzung von Quoten, kein Tippgeber. Ohne bestandenen Test im Journal sollte kein Geld nach den Ausgaben gesetzt werden.</p>
+    <p>Keine Anlage- oder Wettberatung. Wetten kann süchtig machen — Hilfe: www.bundesweit-gegen-gluecksspielsucht.de</p>
+  </footer>
+
+</div>
+
+<script>
+// ============ Wettbewerbe ============
+// str = grobe Ligastärke (1,00 ≈ europäisches Mittelfeld), ol = OpenLigaDB-Kürzel
+const LEAGUES=[
+ {g:"Europapokal",items:[
+  {id:"ucl",de:"Champions League",en:"UEFA Champions League league phase",wiki:"{S} UEFA Champions League league phase",sy:1,str:1.30},
+  {id:"uel",de:"Europa League",en:"UEFA Europa League league phase",wiki:"{S} UEFA Europa League league phase",sy:1,str:1.12},
+  {id:"uecl",de:"Conference League",en:"UEFA Conference League league phase",wiki:"{S} UEFA Conference League league phase",sy:1,str:1.00},
+ ]},
+ {g:"Deutschsprachig",items:[
+  {id:"bl1",de:"Bundesliga",cc:"DE",en:"Bundesliga",wiki:"{S} Bundesliga",sy:1,str:1.24,ol:"bl1"},
+  {id:"bl2",de:"2. Bundesliga",cc:"DE",en:"2. Bundesliga",wiki:"{S} 2. Bundesliga",sy:1,str:1.04,ol:"bl2"},
+  {id:"bl3",de:"3. Liga",cc:"DE",en:"3. Liga",wiki:"{S} 3. Liga",sy:1,str:0.92,ol:"bl3"},
+  {id:"at1",de:"Bundesliga",cc:"AT",en:"Austrian Football Bundesliga",wiki:"{S} Austrian Football Bundesliga",sy:1,str:1.00},
+  {id:"at2",de:"2. Liga",cc:"AT",en:"Austrian Football Second League",wiki:"{S} Austrian Football Second League",sy:1,str:0.82},
+  {id:"ch1",de:"Super League",cc:"CH",en:"Swiss Super League",wiki:"{S} Swiss Super League",sy:1,str:0.98},
+  {id:"ch2",de:"Challenge League",cc:"CH",en:"Swiss Challenge League",wiki:"{S} Swiss Challenge League",sy:1,str:0.80},
+ ]},
+ {g:"England",items:[
+  {id:"epl",de:"Premier League",cc:"EN",en:"Premier League",wiki:"{S} Premier League",sy:1,str:1.30},
+  {id:"efl",de:"Championship",cc:"EN",en:"EFL Championship",wiki:"{S} EFL Championship",sy:1,str:1.08},
+  {id:"el1",de:"League One",cc:"EN",en:"EFL League One",wiki:"{S} EFL League One",sy:1,str:0.90},
+  {id:"el2",de:"League Two",cc:"EN",en:"EFL League Two",wiki:"{S} EFL League Two",sy:1,str:0.80},
+  {id:"ent",de:"National League",cc:"EN",en:"National League (division)",wiki:"{S} National League (division)",sy:1,str:0.74},
+ ]},
+ {g:"Spanien &amp; Portugal",items:[
+  {id:"esp",de:"La Liga",cc:"ES",en:"La Liga",wiki:"{S} La Liga",sy:1,str:1.26},
+  {id:"esp2",de:"Segunda División",cc:"ES",en:"Segunda División",wiki:"{S} Segunda División",sy:1,str:1.00},
+  {id:"por",de:"Primeira Liga",cc:"PT",en:"Primeira Liga",wiki:"{S} Primeira Liga",sy:1,str:1.10},
+  {id:"por2",de:"Liga Portugal 2",cc:"PT",en:"Liga Portugal 2",wiki:"{S} Liga Portugal 2",sy:1,str:0.86},
+ ]},
+ {g:"Italien &amp; Frankreich",items:[
+  {id:"ita",de:"Serie A",cc:"IT",en:"Serie A",wiki:"{S} Serie A",sy:1,str:1.24},
+  {id:"ita2",de:"Serie B",cc:"IT",en:"Serie B",wiki:"{S} Serie B",sy:1,str:1.00},
+  {id:"fra",de:"Ligue 1",cc:"FR",en:"Ligue 1",wiki:"{S} Ligue 1",sy:1,str:1.16},
+  {id:"fra2",de:"Ligue 2",cc:"FR",en:"Ligue 2",wiki:"{S} Ligue 2",sy:1,str:0.97},
+  {id:"fra3",de:"National",cc:"FR",en:"Championnat National",wiki:"{S} Championnat National",sy:1,str:0.84},
+ ]},
+ {g:"West- &amp; Nordeuropa",items:[
+  {id:"ned",de:"Eredivisie",cc:"NL",en:"Eredivisie",wiki:"{S} Eredivisie",sy:1,str:1.10},
+  {id:"ned2",de:"Eerste Divisie",cc:"NL",en:"Eerste Divisie",wiki:"{S} Eerste Divisie",sy:1,str:0.88},
+  {id:"bel",de:"Pro League",cc:"BE",en:"Belgian Pro League",wiki:"{S} Belgian Pro League",sy:1,str:1.05},
+  {id:"bel2",de:"Challenger Pro League",cc:"BE",en:"Challenger Pro League",wiki:"{S} Challenger Pro League",sy:1,str:0.84},
+  {id:"sco",de:"Premiership",cc:"SC",en:"Scottish Premiership",wiki:"{S} Scottish Premiership",sy:1,str:0.96},
+  {id:"sco2",de:"Championship",cc:"SC",en:"Scottish Championship",wiki:"{S} Scottish Championship",sy:1,str:0.80},
+  {id:"irl",de:"Premier Division",cc:"IE",en:"League of Ireland Premier Division",wiki:"{S} League of Ireland Premier Division",sy:0,str:0.86},
+  {id:"nir",de:"NIFL Premiership",cc:"NI",en:"NIFL Premiership",wiki:"{S} NIFL Premiership",sy:1,str:0.78},
+  {id:"wal",de:"Cymru Premier",cc:"WA",en:"Cymru Premier",wiki:"{S} Cymru Premier",sy:1,str:0.72},
+  {id:"den",de:"Superliga",cc:"DK",en:"Danish Superliga",wiki:"{S} Danish Superliga",sy:1,str:0.98},
+  {id:"den2",de:"1. Division",cc:"DK",en:"Danish 1st Division",wiki:"{S} Danish 1st Division",sy:1,str:0.80},
+  {id:"nor",de:"Eliteserien",cc:"NO",en:"Eliteserien",wiki:"{S} Eliteserien",sy:0,str:0.94},
+  {id:"nor2",de:"OBOS-ligaen",cc:"NO",en:"Norwegian First Division",wiki:"{S} Norwegian First Division",sy:0,str:0.78},
+  {id:"swe",de:"Allsvenskan",cc:"SE",en:"Allsvenskan",wiki:"{S} Allsvenskan",sy:0,str:0.94},
+  {id:"swe2",de:"Superettan",cc:"SE",en:"Superettan",wiki:"{S} Superettan",sy:0,str:0.78},
+  {id:"fin",de:"Veikkausliiga",cc:"FI",en:"Veikkausliiga",wiki:"{S} Veikkausliiga",sy:0,str:0.88},
+  {id:"isl",de:"Besta deild",cc:"IS",en:"Besta deild karla",wiki:"{S} Besta deild karla",sy:0,str:0.84},
+  {id:"fro",de:"Betri deildin",cc:"FO",en:"Faroe Islands Premier League",wiki:"{S} Faroe Islands Premier League",sy:0,str:0.68},
+  {id:"lux",de:"National Division",cc:"LU",en:"Luxembourg National Division",wiki:"{S} Luxembourg National Division",sy:1,str:0.72},
+ ]},
+ {g:"Ost- &amp; Südosteuropa",items:[
+  {id:"cze",de:"Fortuna Liga",cc:"CZ",en:"Czech First League",wiki:"{S} Czech First League",sy:1,str:0.97},
+  {id:"cze2",de:"FNL",cc:"CZ",en:"Czech National Football League",wiki:"{S} Czech National Football League",sy:1,str:0.80},
+  {id:"pol",de:"Ekstraklasa",cc:"PL",en:"Ekstraklasa",wiki:"{S} Ekstraklasa",sy:1,str:0.94},
+  {id:"pol2",de:"I liga",cc:"PL",en:"I liga",wiki:"{S} I liga",sy:1,str:0.80},
+  {id:"svk",de:"Niké liga",cc:"SK",en:"Slovak First Football League",wiki:"{S} Slovak First Football League",sy:1,str:0.86},
+  {id:"hun",de:"NB I",cc:"HU",en:"Nemzeti Bajnokság I",wiki:"{S} Nemzeti Bajnokság I",sy:1,str:0.88},
+  {id:"rou",de:"Liga I",cc:"RO",en:"Liga I",wiki:"{S} Liga I",sy:1,str:0.90},
+  {id:"bul",de:"Parva Liga",cc:"BG",en:"First Professional Football League (Bulgaria)",wiki:"{S} First Professional Football League (Bulgaria)",sy:1,str:0.84},
+  {id:"srb",de:"SuperLiga",cc:"RS",en:"Serbian SuperLiga",wiki:"{S} Serbian SuperLiga",sy:1,str:0.92},
+  {id:"cro",de:"HNL",cc:"HR",en:"Croatian Football League",wiki:"{S} Croatian Football League",sy:1,str:0.95},
+  {id:"svn",de:"PrvaLiga",cc:"SI",en:"Slovenian PrvaLiga",wiki:"{S} Slovenian PrvaLiga",sy:1,str:0.88},
+  {id:"bih",de:"Premijer liga",cc:"BA",en:"Premier League of Bosnia and Herzegovina",wiki:"{S} Premier League of Bosnia and Herzegovina",sy:1,str:0.84},
+  {id:"mkd",de:"Prva Liga",cc:"MK",en:"Macedonian First Football League",wiki:"{S} Macedonian First Football League",sy:1,str:0.78},
+  {id:"alb",de:"Kategoria Superiore",cc:"AL",en:"Kategoria Superiore",wiki:"{S} Kategoria Superiore",sy:1,str:0.80},
+  {id:"kos",de:"Superliga",cc:"XK",en:"Football Superleague of Kosovo",wiki:"{S} Football Superleague of Kosovo",sy:1,str:0.76},
+  {id:"mne",de:"Prva CFL",cc:"ME",en:"Montenegrin First League",wiki:"{S} Montenegrin First League",sy:1,str:0.76},
+  {id:"gre",de:"Super League",cc:"GR",en:"Super League Greece",wiki:"{S} Super League Greece",sy:1,str:1.00},
+  {id:"gre2",de:"Super League 2",cc:"GR",en:"Super League Greece 2",wiki:"{S} Super League Greece 2",sy:1,str:0.78},
+  {id:"tur",de:"Süper Lig",cc:"TR",en:"Süper Lig",wiki:"{S} Süper Lig",sy:1,str:1.05},
+  {id:"tur2",de:"1. Lig",cc:"TR",en:"TFF First League",wiki:"{S} TFF First League",sy:1,str:0.84},
+  {id:"ukr",de:"Premier Liha",cc:"UA",en:"Ukrainian Premier League",wiki:"{S} Ukrainian Premier League",sy:1,str:0.97},
+  {id:"rus",de:"Premjer-Liga",cc:"RU",en:"Russian Premier League",wiki:"{S} Russian Premier League",sy:1,str:1.05},
+  {id:"blr",de:"Wysschaja Liga",cc:"BY",en:"Belarusian Premier League",wiki:"{S} Belarusian Premier League",sy:0,str:0.82},
+  {id:"mda",de:"Super Liga",cc:"MD",en:"Moldovan Super Liga",wiki:"{S} Moldovan Super Liga",sy:1,str:0.76},
+  {id:"geo",de:"Erovnuli Liga",cc:"GE",en:"Erovnuli Liga",wiki:"{S} Erovnuli Liga",sy:0,str:0.80},
+  {id:"arm",de:"Premier League",cc:"AM",en:"Armenian Premier League",wiki:"{S} Armenian Premier League",sy:1,str:0.78},
+  {id:"aze",de:"Premyer Liqası",cc:"AZ",en:"Azerbaijan Premier League",wiki:"{S} Azerbaijan Premier League",sy:1,str:0.86},
+  {id:"kaz",de:"Premier League",cc:"KZ",en:"Kazakhstan Premier League",wiki:"{S} Kazakhstan Premier League",sy:0,str:0.84},
+  {id:"lva",de:"Virsliga",cc:"LV",en:"Latvian Higher League",wiki:"{S} Latvian Higher League",sy:0,str:0.76},
+  {id:"ltu",de:"A lyga",cc:"LT",en:"A Lyga",wiki:"{S} A Lyga",sy:0,str:0.76},
+  {id:"est",de:"Meistriliiga",cc:"EE",en:"Meistriliiga",wiki:"{S} Meistriliiga",sy:0,str:0.74},
+  {id:"cyp",de:"First Division",cc:"CY",en:"Cypriot First Division",wiki:"{S} Cypriot First Division",sy:1,str:0.92},
+  {id:"isr",de:"Ligat ha'Al",cc:"IL",en:"Israeli Premier League",wiki:"{S} Israeli Premier League",sy:1,str:0.92},
+  {id:"mlt",de:"Premier League",cc:"MT",en:"Maltese Premier League",wiki:"{S} Maltese Premier League",sy:1,str:0.72},
+ ]},
+ {g:"Amerika",items:[
+  {id:"mls",de:"MLS",cc:"US",en:"Major League Soccer season",wiki:"{S} Major League Soccer season",sy:0,str:0.95},
+  {id:"usl",de:"USL Championship",cc:"US",en:"USL Championship season",wiki:"{S} USL Championship season",sy:0,str:0.82},
+  {id:"can",de:"Canadian Premier League",cc:"CA",en:"Canadian Premier League season",wiki:"{S} Canadian Premier League season",sy:0,str:0.78},
+  {id:"mex",de:"Liga MX",cc:"MX",en:"Liga MX season",wiki:"{S} Liga MX season",sy:1,str:0.98},
+  {id:"mex2",de:"Liga de Expansión",cc:"MX",en:"Liga de Expansión MX season",wiki:"{S} Liga de Expansión MX season",sy:1,str:0.80},
+  {id:"crc",de:"Liga FPD",cc:"CR",en:"Liga FPD",wiki:"{S} Liga FPD",sy:1,str:0.80},
+  {id:"bra",de:"Série A",cc:"BR",en:"Campeonato Brasileiro Série A",wiki:"{S} Campeonato Brasileiro Série A",sy:0,str:1.02},
+  {id:"bra2",de:"Série B",cc:"BR",en:"Campeonato Brasileiro Série B",wiki:"{S} Campeonato Brasileiro Série B",sy:0,str:0.88},
+  {id:"arg",de:"Primera División",cc:"AR",en:"Argentine Primera División",wiki:"{S} Argentine Primera División",sy:0,str:1.00},
+  {id:"arg2",de:"Primera Nacional",cc:"AR",en:"Primera Nacional",wiki:"{S} Primera Nacional",sy:0,str:0.84},
+  {id:"chi",de:"Primera División",cc:"CL",en:"Chilean Primera División",wiki:"{S} Chilean Primera División",sy:0,str:0.88},
+  {id:"col",de:"Primera A",cc:"CO",en:"Categoría Primera A season",wiki:"{S} Categoría Primera A season",sy:0,str:0.92},
+  {id:"per",de:"Liga 1",cc:"PE",en:"Liga 1 (Peru)",wiki:"{S} Liga 1 (Peru)",sy:0,str:0.84},
+  {id:"ecu",de:"Serie A",cc:"EC",en:"Ecuadorian Serie A",wiki:"{S} Ecuadorian Serie A",sy:0,str:0.88},
+  {id:"uru",de:"Primera División",cc:"UY",en:"Uruguayan Primera División season",wiki:"{S} Uruguayan Primera División season",sy:0,str:0.90},
+  {id:"par",de:"Primera División",cc:"PY",en:"Paraguayan Primera División season",wiki:"{S} Paraguayan Primera División season",sy:0,str:0.86},
+  {id:"bol",de:"División Profesional",cc:"BO",en:"Bolivian Primera División season",wiki:"{S} Bolivian Primera División season",sy:0,str:0.80},
+  {id:"ven",de:"Liga FUTVE",cc:"VE",en:"Liga FUTVE",wiki:"{S} Liga FUTVE",sy:0,str:0.80},
+ ]},
+ {g:"Asien &amp; Ozeanien",items:[
+  {id:"jpn",de:"J1 League",cc:"JP",en:"J1 League",wiki:"{S} J1 League",sy:1,str:0.98},
+  {id:"jpn2",de:"J2 League",cc:"JP",en:"J2 League",wiki:"{S} J2 League",sy:1,str:0.84},
+  {id:"kor",de:"K League 1",cc:"KR",en:"K League 1",wiki:"{S} K League 1",sy:0,str:0.94},
+  {id:"kor2",de:"K League 2",cc:"KR",en:"K League 2",wiki:"{S} K League 2",sy:0,str:0.80},
+  {id:"chn",de:"Super League",cc:"CN",en:"Chinese Super League",wiki:"{S} Chinese Super League",sy:0,str:0.88},
+  {id:"aus",de:"A-League Men",cc:"AU",en:"A-League Men",wiki:"{S} A-League Men",sy:1,str:0.88},
+  {id:"sau",de:"Pro League",cc:"SA",en:"Saudi Pro League",wiki:"{S} Saudi Pro League",sy:1,str:0.96},
+  {id:"uae",de:"Pro League",cc:"AE",en:"UAE Pro League",wiki:"{S} UAE Pro League",sy:1,str:0.86},
+  {id:"qat",de:"Stars League",cc:"QA",en:"Qatar Stars League",wiki:"{S} Qatar Stars League",sy:1,str:0.86},
+  {id:"irn",de:"Persian Gulf Pro League",cc:"IR",en:"Persian Gulf Pro League",wiki:"{S} Persian Gulf Pro League",sy:1,str:0.88},
+  {id:"irq",de:"Stars League",cc:"IQ",en:"Iraq Stars League",wiki:"{S} Iraq Stars League",sy:1,str:0.82},
+  {id:"uzb",de:"Superliga",cc:"UZ",en:"Uzbekistan Super League",wiki:"{S} Uzbekistan Super League",sy:0,str:0.82},
+  {id:"ind",de:"Super League",cc:"IN",en:"Indian Super League",wiki:"{S} Indian Super League",sy:1,str:0.78},
+  {id:"tha",de:"Thai League 1",cc:"TH",en:"Thai League 1",wiki:"{S} Thai League 1",sy:1,str:0.80},
+  {id:"vie",de:"V.League 1",cc:"VN",en:"V.League 1",wiki:"{S} V.League 1",sy:1,str:0.76},
+  {id:"idn",de:"Liga 1",cc:"ID",en:"Liga 1 (Indonesia)",wiki:"{S} Liga 1 (Indonesia)",sy:1,str:0.76},
+ ]},
+ {g:"Afrika",items:[
+  {id:"egy",de:"Premier League",cc:"EG",en:"Egyptian Premier League",wiki:"{S} Egyptian Premier League",sy:1,str:0.88},
+  {id:"mar",de:"Botola Pro",cc:"MA",en:"Botola",wiki:"{S} Botola",sy:1,str:0.88},
+  {id:"tun",de:"Ligue 1",cc:"TN",en:"Tunisian Ligue Professionnelle 1",wiki:"{S} Tunisian Ligue Professionnelle 1",sy:1,str:0.84},
+  {id:"alg",de:"Ligue 1",cc:"DZ",en:"Algerian Ligue Professionnelle 1",wiki:"{S} Algerian Ligue Professionnelle 1",sy:1,str:0.84},
+  {id:"rsa",de:"Premiership",cc:"ZA",en:"South African Premiership",wiki:"{S} South African Premiership",sy:1,str:0.84},
+  {id:"ngr",de:"NPFL",cc:"NG",en:"Nigeria Premier Football League",wiki:"{S} Nigeria Premier Football League",sy:1,str:0.78},
+  {id:"gha",de:"Premier League",cc:"GH",en:"Ghana Premier League",wiki:"{S} Ghana Premier League",sy:1,str:0.76},
+ ]},
+];
+
+const N=12, SIZE=7, FH_SHARE=0.45, ET_SHARE=30/90;
+const STALE_MS=3*24*3600*1000;
+const MODELS=["claude-sonnet-4-5","claude-sonnet-4-6","claude-3-7-sonnet-latest"];
+
+const $=id=>document.getElementById(id);
+function num(id){const el=$(id);if(!el)return 0;const v=parseFloat(el.value);return isFinite(v)?v:0;}
+function pct(x){return (x*100).toFixed(1)+"%";}
+function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
+function set(id,t){const el=$(id);if(el)el.textContent=t;}
+function isStale(ts){return (Date.now()-ts)>STALE_MS;}
+function clamp(x,lo,hi){return x<lo?lo:(x>hi?hi:x);}
+
+// ============ Rechenkern ============
+function poissonVec(l,n){const v=[];let p=Math.exp(-l);for(let k=0;k<=n;k++){v[k]=p;p=p*l/(k+1);}return v;}
+
+// Dixon-Coles-Korrektur fuer die vier knappen Ergebnisse
+function tau(h,a,l,m,r){
+  if(r===0)return 1;
+  if(h===0&&a===0)return Math.max(1-l*m*r,0.01);
+  if(h===0&&a===1)return Math.max(1+l*r,0.01);
+  if(h===1&&a===0)return Math.max(1+m*r,0.01);
+  if(h===1&&a===1)return Math.max(1-r,0.01);
+  return 1;
+}
+function scoreMatrix(lamH,lamA,rho,n){
+  const ph=poissonVec(lamH,n),pa=poissonVec(lamA,n),M=[];let s=0;
+  for(let h=0;h<=n;h++){M[h]=[];for(let a=0;a<=n;a++){
+    const p=ph[h]*pa[a]*tau(h,a,lamH,lamA,rho);M[h][a]=p>0?p:0;s+=M[h][a];}}
+  if(s>0)for(let h=0;h<=n;h++)for(let a=0;a<=n;a++)M[h][a]/=s;   // Abschneiden ausgleichen
+  return M;
+}
+function sumM(M,pred){let s=0;for(let h=0;h<M.length;h++)for(let a=0;a<M.length;a++)if(pred(h,a))s+=M[h][a];return s;}
+
+// Margen-Bereinigung nach der Potenzmethode: sum (1/o_i)^k = 1
+function devig(odds){
+  if(!odds.every(o=>o>1))return null;
+  const inv=odds.map(o=>1/o), s=inv.reduce((a,b)=>a+b,0);
+  if(!(s>0))return null;
+  if(Math.abs(s-1)<1e-9)return inv.slice();
+  const f=x=>inv.reduce((a,v)=>a+Math.pow(v,x),0)-1;
+  let lo=0.2,hi=3,k=1;
+  if(f(lo)*f(hi)>0)return inv.map(v=>v/s);
+  for(let i=0;i<80;i++){k=(lo+hi)/2;if(f(lo)*f(k)<=0)hi=k;else lo=k;}
+  const out=inv.map(v=>Math.pow(v,k)),t=out.reduce((a,b)=>a+b,0);
+  return out.map(v=>v/t);
+}
+function shrink(raw,pld,K){
+  if(!(pld>0)||!(K>0))return raw;
+  const w=pld/(pld+K);
+  return w*raw+(1-w);
+}
+function kelly(p,o,frac,cap){
+  const f=(p*o-1)/(o-1);
+  return clamp(f*frac,0,cap);
+}
+
+// ============ Speicher (Artefakt-Storage oder localStorage) ============
+const store={
+  async get(k){
+    try{if(window.storage&&window.storage.get){const r=await window.storage.get(k);return r&&r.value!=null?r.value:null;}}catch(_){}
+    try{return localStorage.getItem(k);}catch(_){return null;}
+  },
+  async set(k,v){
+    try{if(window.storage&&window.storage.set){await window.storage.set(k,v);return;}}catch(_){}
+    try{localStorage.setItem(k,v);}catch(_){}
+  },
+  async del(k){
+    try{if(window.storage&&window.storage.delete){await window.storage.delete(k);}}catch(_){}
+    try{localStorage.removeItem(k);}catch(_){}
+  }
+};
+const KEY=id=>"lt:"+id, JKEY="journal:v1", MKEY="apimodel";
+async function cacheGet(id){try{const v=await store.get(KEY(id));return v?JSON.parse(v):null;}catch(_){return null;}}
+async function cacheSet(id,obj){await store.set(KEY(id),JSON.stringify(obj));}
+
+// ============ Saison-Kandidaten ============
+function seasonCands(splitYear){
+  const d=new Date(),y=d.getFullYear(),m=d.getMonth()+1;
+  if(!splitYear)return [String(y),String(y-1),String(y-2)];
+  const startY=m>=7?y:y-1;
+  const f=a=>a+"–"+String(a+1).slice(2);
+  return [f(startY),f(startY-1),f(startY-2)];
+}
+function seasonStartYear(){const d=new Date();return d.getMonth()+1>=7?d.getFullYear():d.getFullYear()-1;}
+
+// ============ Liga-Raster ============
+const gridEl=$("leagueGrid");
+let activeLeague=null, leagueTeams=[], leagueMeta={};
+
+function buildLeagueGrid(){
+  let h="";
+  LEAGUES.forEach(sec=>{
+    h+='<div class="grp">'+sec.g+'</div><div class="lgrid">';
+    sec.items.forEach(L=>{
+      h+='<button type="button" class="lbtn" data-id="'+L.id+'">'+esc(L.de)
+        +'<span class="cc">'+(L.cc||"UEFA")+'</span></button>';
+    });
+    h+='</div>';
+  });
+  gridEl.innerHTML=h;
+  gridEl.querySelectorAll(".lbtn").forEach(b=>b.addEventListener("click",()=>selectLeague(b.dataset.id,false)));
+}
+function findLeague(id){for(const s of LEAGUES)for(const L of s.items)if(L.id===id)return L;return null;}
+function markActive(id){gridEl.querySelectorAll(".lbtn").forEach(b=>b.classList.toggle("active",b.dataset.id===id));}
+
+async function markCached(){
+  let n=0;
+  for(const s of LEAGUES)for(const L of s.items){
+    const c=await cacheGet(L.id);
+    const el=gridEl.querySelector('.lbtn[data-id="'+L.id+'"]');
+    if(c&&el){
+      const st=isStale(c.ts);
+      el.classList.add("cached");el.classList.toggle("stale",st);
+      el.title="Rückfall gespeichert · Stand "+ageTxt(c.ts);
+      el.querySelector(".cc").textContent="Rückfall";n++;
+    }
+  }
+  set("cacheHint",n?n+" Tabelle(n) als Rückfall gesichert":"jeder Klick lädt frisch");
+}
+$("clearBtn").addEventListener("click",async()=>{
+  for(const s of LEAGUES)for(const L of s.items)await store.del(KEY(L.id));
+  gridEl.querySelectorAll(".lbtn").forEach(b=>{
+    b.classList.remove("cached","stale");
+    const L=findLeague(b.dataset.id);
+    b.querySelector(".cc").textContent=(L&&L.cc)||"UEFA";
+  });
+  set("cacheHint","Speicher geleert");
+  showStatus("info","Gespeicherte Tabellen gelöscht. Das Journal bleibt erhalten.");
+});
+
+// ============ Status ============
+function showStatus(kind,html){const s=$("tblStatus");s.className="statusbox show "+kind;s.innerHTML=html;}
+function ageTxt(ts){
+  const h=(Date.now()-ts)/36e5;
+  if(h<1)return "gerade eben";
+  if(h<24)return Math.round(h)+" h alt";
+  return Math.round(h/24)+" Tage alt";
+}
+
+// ============ API (Websuche) ============
+// Netzaufrufe mit hartem Zeitlimit — ohne das bleibt die Oberflaeche bei
+// haengender Verbindung dauerhaft im Ladezustand stehen.
+async function fetchTimeout(url,opts,ms){
+  const ctl=typeof AbortController!=="undefined"?new AbortController():null;
+  const t=setTimeout(()=>{if(ctl)ctl.abort();},ms);
+  try{
+    return await fetch(url,Object.assign({},opts,ctl?{signal:ctl.signal}:{}));
+  }catch(e){
+    if(e&&e.name==="AbortError")throw new Error("Zeitüberschreitung nach "+Math.round(ms/1000)+" s");
+    throw new Error("Keine Verbindung (offline oder blockiert)");
+  }finally{clearTimeout(t);}
+}
+let apiModel=null;
+async function callClaude(prompt,opts){
+  opts=opts||{};
+  const cands=apiModel?[apiModel]:MODELS;
+  let lastErr=null;
+  for(const model of cands){
+    const payload={model,max_tokens:opts.maxTokens||1500,messages:[{role:"user",content:prompt}]};
+    if(!opts.noSearch){
+      const t={type:"web_search_20250305",name:"web_search",max_uses:opts.maxUses||2};
+      if(opts.domains)t.allowed_domains=opts.domains;
+      payload.tools=[t];
+    }
+    const resp=await fetchTimeout("https://api.anthropic.com/v1/messages",{
+      method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)},25000);
+    const body=await resp.text();
+    if(!resp.ok){
+      if(resp.status===404&&!apiModel){lastErr=new Error("Modell "+model+" nicht verfügbar");continue;}
+      const e=new Error("API "+resp.status);e.rawBody=body;throw e;
+    }
+    apiModel=model;store.set(MKEY,model);
+    let data;
+    try{data=JSON.parse(body);}
+    catch(_){const e=new Error("Antwort unvollständig ("+body.length+" Zeichen)");e.rawBody=body;throw e;}
+    return (data.content||[]).filter(b=>b.type==="text").map(b=>b.text).join("\n");
+  }
+  throw lastErr||new Error("Kein nutzbares Modell");
+}
+function extractJson(text){
+  if(!text)return null;
+  const c=text.replace(/```json|```/gi,"").trim();
+  const s=c.indexOf("{"),e=c.lastIndexOf("}");
+  if(s<0||e<=s)return null;
+  try{return JSON.parse(c.slice(s,e+1));}catch(_){}
+  let d=0,st=-1;
+  for(let i=0;i<c.length;i++){
+    if(c[i]==="{"){if(d===0)st=i;d++;}
+    else if(c[i]==="}"){d--;if(d===0&&st>=0){try{return JSON.parse(c.slice(st,i+1));}catch(_){st=-1;}}}
+  }
+  return null;
+}
+function salvageTeams(text){
+  if(!text)return [];
+  const out=[],re=/\{[^{}]*?"name"\s*:\s*"[^"]+"[^{}]*?\}/g;let m;
+  while((m=re.exec(text))!==null){
+    try{const o=JSON.parse(m[0]);
+      if(o&&o.name&&+o.pld>0&&isFinite(+o.gf)&&isFinite(+o.ga))out.push({name:o.name,pld:+o.pld,gf:+o.gf,ga:+o.ga});
+    }catch(_){}
+  }
+  return out;
+}
+function unescapeBody(s){return String(s||"").replace(/\\"/g,'"').replace(/\\n/g,"\n");}
+
+// ============ Wikipedia (frei, ohne Schlüssel, CORS offen) ============
+// Holt den Saisonartikel direkt und liest die Tabelle aus dem HTML.
+// Ersetzt die Websuche: keine Aufruf-Limits, keine Namensverwechslungen,
+// keine abgeschnittenen Antworten — und laeuft auch als lokale Datei.
+function decodeEnt(s){
+  return String(s)
+    .replace(/&#(\d+);/g,(m,d)=>String.fromCharCode(+d))
+    .replace(/&#x([0-9a-f]+);/gi,(m,h)=>String.fromCharCode(parseInt(h,16)))
+    .replace(/&nbsp;/g," ").replace(/&lt;/g,"<").replace(/&gt;/g,">")
+    .replace(/&quot;/g,'"').replace(/&amp;/g,"&");
+}
+// Liefert die Zeilen JEDES Tabellenabschnitts einzeln. Ligen mit Conferences oder
+// Gruppen (MLS, Argentinien) haben mehrere; nur die erste zu nehmen liefert sonst
+// das halbe Teilnehmerfeld.
+function wikiTables(html){
+  return (html.match(/<table[\s\S]*?<\/table>/g)||[]).filter(x=>{
+    const h=(x.match(/<th[\s\S]*?<\/th>/g)||[]).map(y=>decodeEnt(y.replace(/<[^>]*>/g,"")).trim());
+    return h.indexOf("Pld")>=0&&h.indexOf("GF")>=0&&h.indexOf("GA")>=0;
+  }).map(t=>tableRows(t)).filter(r=>r.length);
+}
+function wikiRows(html){
+  const out=[];wikiTables(html).forEach(r=>{for(const x of r)out.push(x);});
+  return out;
+}
+function tableRows(t){
+  return (t.match(/<tr[\s\S]*?<\/tr>/g)||[]).map(r=>{
+    const cells=(r.match(/<t[dh][\s\S]*?<\/t[dh]>/g)||[]).map(c=>decodeEnt(c
+      .replace(/<sup[\s\S]*?<\/sup>/g,"").replace(/<style[\s\S]*?<\/style>/g,"")
+      .replace(/<[^>]*>/g," ")).replace(/\[[a-z0-9 ]+\]/gi,"").replace(/\s+/g," ").trim());
+    // Spalten nach den Zahlen abschneiden (Qualifikation/Abstieg). Es muss auf
+    // eine reine Zahl geprueft werden — Texte wie "Relegation to K League 2"
+    // enden selbst auf einer Ziffer.
+    while(cells.length&&!/^[+−–-]?\d+$/.test(cells[cells.length-1]))cells.pop();
+    if(cells.length>1)cells[1]=cells[1].replace(/\s*\([A-Z]{1,2}(?:\s*,\s*[A-Z]{1,2})*\)\s*$/,"").trim();
+    return cells.join(" ");
+  }).filter(x=>(x.match(/\d+/g)||[]).length>=6);
+}
+// ============ Einzelspiele aus der Ergebnis-Kreuztabelle ============
+// Die Saisonartikel enthalten eine Matrix "Heim \ Auswärts" mit jedem Ergebnis.
+// Daraus laesst sich die Staerke jeder Mannschaft gegen die tatsaechlich
+// bestrittenen Gegner schaetzen — Tabellensummen koennen das nicht.
+function parseResultsGrid(html){
+  const tables=html.match(/<table[\s\S]*?<\/table>/g)||[];
+  for(const t of tables){
+    const rows=t.match(/<tr[\s\S]*?<\/tr>/g)||[];
+    if(rows.length<5)continue;
+    const head=decodeEnt(rows[0].replace(/<[^>]*>/g," ")).replace(/\s+/g," ").trim();
+    if(!/^Home\s*\\\s*Away/i.test(head))continue;
+    const names=[],grid=[];
+    for(let r=1;r<rows.length;r++){
+      const cells=(rows[r].match(/<t[dh][\s\S]*?<\/t[dh]>/g)||[]).map(c=>decodeEnt(c
+        .replace(/<sup[\s\S]*?<\/sup>/g,"").replace(/<[^>]*>/g," "))
+        .replace(/\[[^\]]*\]/g,"").replace(/\s+/g," ").trim());
+      if(cells.length<3)continue;
+      names.push(cells[0]);grid.push(cells.slice(1));
+    }
+    const n=names.length;
+    if(n<4)continue;
+    if(!grid.every(r=>r.length>=n))continue;      // Zeilen und Spalten muessen zusammenpassen
+    const matches=[];
+    for(let i=0;i<n;i++)for(let j=0;j<n;j++){
+      if(i===j)continue;
+      const m=String(grid[i][j]).match(/^(\d+)\s*[–—-]\s*(\d+)$/);
+      if(!m)continue;                              // "—", leer oder abgesagt
+      matches.push({h:i,a:j,gh:+m[1],ga:+m[2]});
+    }
+    if(matches.length<n)continue;
+    return {names,matches};
+  }
+  return null;
+}
+
+// Angriffs- und Abwehrstaerke als Maximum-Likelihood-Schaetzung ueber alle
+// Einzelspiele (iterative Anpassung, doppelte Poisson-Verteilung).
+// Der Heimvorteil faellt dabei als geschaetzter Wert mit ab.
+// PRIOR_M = Gewicht der Annahme "durchschnittlich stark", gemessen in Spielen.
+// Ohne diese Daempfung liefert ein Fit nach zwei Spieltagen Ausreisser wie 2,60.
+const PRIOR_M=2, ADV_M=50, ADV_0=1.15;
+function fitStrengths(n,matches,iter){
+  const atk=new Array(n).fill(1),def=new Array(n).fill(1);
+  let adv=ADV_0;
+  const gf=new Array(n).fill(0),ga=new Array(n).fill(0),cnt=new Array(n).fill(0);
+  let tot=0;
+  matches.forEach(m=>{
+    gf[m.h]+=m.gh;ga[m.h]+=m.ga;gf[m.a]+=m.ga;ga[m.a]+=m.gh;
+    cnt[m.h]++;cnt[m.a]++;tot+=m.gh+m.ga;
+  });
+  const base=tot/(2*matches.length);
+  if(!(base>0))return null;
+  for(let it=0;it<(iter||80);it++){
+    // Angriff: erzielte Tore geteilt durch die Erwartung gegen die echten Gegner
+    for(let i=0;i<n;i++){
+      let e=0;
+      matches.forEach(m=>{
+        if(m.h===i)e+=def[m.a]*base*adv;
+        else if(m.a===i)e+=def[m.h]*base/adv;
+      });
+      if(e>0)atk[i]=clamp((gf[i]+PRIOR_M*base)/(e+PRIOR_M*base),0.1,4);
+    }
+    let mean=0;for(let i=0;i<n;i++)mean+=atk[i];mean/=n;
+    if(mean>0)for(let i=0;i<n;i++)atk[i]/=mean;      // Normierung: Schnitt = 1,00
+    // Abwehr: kassierte Tore geteilt durch die Erwartung gegen die echten Gegner
+    for(let i=0;i<n;i++){
+      let e=0;
+      matches.forEach(m=>{
+        if(m.h===i)e+=atk[m.a]*base/adv;
+        else if(m.a===i)e+=atk[m.h]*base*adv;
+      });
+      if(e>0)def[i]=clamp((ga[i]+PRIOR_M*base)/(e+PRIOR_M*base),0.1,4);
+    }
+    // Heimvorteil in geschlossener Form aus der Likelihood
+    let H=0,A=0,SH=0,SA=0;
+    matches.forEach(m=>{
+      H+=m.gh;A+=m.ga;
+      SH+=atk[m.h]*def[m.a]*base;
+      SA+=atk[m.a]*def[m.h]*base;
+    });
+    if(SH>0){
+      const disc=(A-H)*(A-H)+4*SH*SA;
+      const raw=clamp((H-A+Math.sqrt(disc))/(2*SH),0.9,1.6);
+      // Aus wenigen Partien laesst sich kein Heimvorteil ablesen — zum Erfahrungswert ziehen
+      const w=matches.length/(matches.length+ADV_M);
+      adv=w*raw+(1-w)*ADV_0;
+    }
+  }
+  return {atk,def,adv,base,games:matches.length,pld:cnt};
+}
+
+// Taucht ein Team in mehreren Tabellen auf (Hauptrunde + Meisterrunde),
+// zaehlt die Zeile mit den meisten Spielen.
+function dedupeTeams(teams){
+  const by={};
+  teams.forEach(t=>{
+    const k=t.name.toLowerCase().replace(/\s+/g," ").trim();
+    if(!by[k]||t.pld>by[k].pld)by[k]=t;
+  });
+  const list=Object.keys(by).map(k=>by[k]);
+  // Kurzform in eindeutiger Langform aufgehen lassen: "San Martín" → "San Martín (SJ)".
+  // Nur wenn es genau eine Langform gibt — sonst waeren es zwei verschiedene Vereine.
+  const drop=[];
+  list.forEach(a=>{
+    const pre=a.name.toLowerCase()+" (";
+    const longer=list.filter(b=>b!==a&&b.name.toLowerCase().indexOf(pre)===0);
+    if(longer.length===1&&longer[0].pld>a.pld)drop.push(a);
+  });
+  return list.filter(x=>drop.indexOf(x)<0);
+}
+async function loadWiki(title){
+  const u="https://en.wikipedia.org/w/api.php?action=parse&prop=text&format=json&formatversion=2"
+    +"&redirects=1&origin=*&page="+encodeURIComponent(title);
+  const r=await fetchTimeout(u,{headers:{"Accept":"application/json"}},12000);
+  if(r.status===429)throw new Error("Wikipedia drosselt gerade — kurz warten");
+  if(!r.ok)throw new Error("Wikipedia antwortet mit "+r.status);
+  const j=await r.json();
+  if(j.error)throw new Error("Artikel nicht gefunden");
+  const src=j.parse&&j.parse.text;
+  const tabs=wikiTables(typeof src==="string"?src:(src&&src["*"])||"");
+  let teams=dedupeTeams(parsePastedTable(wikiRows(typeof src==="string"?src:(src&&src["*"])||"").join("\n")));
+  // Manche Artikel fassen mehrere Spielklassen zusammen (z. B. National League
+  // mit North und South). Keine einzelne Liga hat über 40 Mannschaften — dann
+  // ist nur die erste Tabelle gemeint.
+  if(teams.length>40&&tabs.length>1)teams=dedupeTeams(parsePastedTable(tabs[0].join("\n")));
+  if(teams.length<4)throw new Error("noch keine Tabelle im Artikel");
+  // Einzelspiele auswerten, wenn der Artikel die Ergebnismatrix hat
+  const g=parseResultsGrid(typeof src==="string"?src:(src&&src["*"])||"");
+  let fit=null;
+  if(g&&g.matches.length>=g.names.length*2){
+    const f=fitStrengths(g.names.length,g.matches);
+    if(f){
+      const key=s=>String(s).toLowerCase().replace(/\s+/g," ").trim();
+      const idx={};g.names.forEach((nm,i)=>idx[key(nm)]=i);
+      let hit=0;
+      teams.forEach(t=>{
+        const i=idx[key(t.name)];
+        if(i===undefined)return;
+        t.atk=f.atk[i];t.def=f.def[i];t.fitPld=f.pld[i];hit++;
+      });
+      if(hit>=teams.length*0.8)fit={games:f.games,adv:f.adv,hit};
+      else teams.forEach(t=>{delete t.atk;delete t.def;delete t.fitPld;});
+    }
+  }
+  return {teams,fit,article:(j.parse&&j.parse.title)||title};
+}
+
+// ============ OpenLigaDB (frei, ohne Schlüssel) ============
+async function loadOpenLiga(shortcut,year){
+  const r=await fetchTimeout("https://api.openligadb.de/getbltable/"+shortcut+"/"+year,
+    {headers:{"Accept":"application/json"}},9000);
+  if(!r.ok)throw new Error("OpenLigaDB "+r.status);
+  const j=await r.json();
+  if(!Array.isArray(j))throw new Error("OpenLigaDB: unerwartete Antwort");
+  const teams=j.filter(t=>t&&t.teamName&&+t.matches>0)
+    .map(t=>({name:t.teamName,pld:+t.matches,gf:+t.goals,ga:+t.opponentGoals}));
+  if(teams.length<4)throw new Error("OpenLigaDB: Saison noch ohne Spiele");
+  return teams;
+}
+
+// ============ Tabellen-Parser ============
+const CLUBTOK=/^(1|2|FC|SC|SV|FSV|TSV|VfB|VfL|SpVgg|BV|MSV|KFC|CD|CF|AC|AS|SS|US|FK|NK|HNK|MFK|SK|AZ|PSV)\.?$/i;
+function plausible(pld,gf,ga){
+  return pld>=1&&pld<=80&&isFinite(gf)&&isFinite(ga)&&gf>=0&&ga>=0&&gf<=pld*8&&ga<=pld*8;
+}
+// Liefert {i,pld,gf,ga}; i = Index der ersten Statistikzahl (davor gehoert alles zum Namen)
+function mapNums(v){
+  let loose=null;
+  for(let i=0;i+5<v.length;i++){
+    if(!(v[i]>0&&v[i]===v[i+1]+v[i+2]+v[i+3]))continue;      // Sp = S + U + N
+    const c={i,pld:v[i],gf:v[i+4],ga:v[i+5]};
+    if(!plausible(c.pld,c.gf,c.ga))continue;
+    if(i+6>=v.length||v[i+6]===c.gf-c.ga)return c;           // Tordifferenz bestaetigt
+    if(!loose)loose=c;
+  }
+  if(loose)return loose;
+  const n=v.length;
+  if(n===3||n===4){
+    for(let i=0;i+2<n;i++)if(plausible(v[i],v[i+1],v[i+2])&&v[i]>=1)return {i,pld:v[i],gf:v[i+1],ga:v[i+2]};
+    return null;
+  }
+  if(n>=7&&plausible(v[0],v[4],v[5]))return {i:0,pld:v[0],gf:v[4],ga:v[5]};
+  return null;   // 5er/6er-Zeilen sind mehrdeutig — lieber nicht raten
+}
+function parsePastedTable(txt){
+  const teams=[];
+  String(txt||"").replace(/(\d)\s*:\s*(\d)/g,"$1 $2").split(/\r?\n/).forEach(line=>{
+    let raw=line.replace(/[\t;|]+/g," ").replace(/\s+/g," ").trim();
+    if(!raw)return;
+    const lead=raw.match(/^(\d{1,2})(\.|\))?\s+(\S+)/);
+    if(lead&&!(lead[2]==="."&&CLUBTOK.test(lead[3])))raw=raw.slice(lead[0].length-lead[3].length).trim();
+    const toks=[];let s=raw,guard=0;
+    while(guard++<20){
+      const m=s.match(/([+−–-]?\d+(?:[.,]\d+)?)\s*$/);
+      if(!m)break;
+      toks.unshift(m[1]);s=s.slice(0,m.index).trim();
+    }
+    const v=toks.map(x=>parseFloat(String(x).replace(/[−–]/g,"-").replace(",",".")));
+    if(v.some(x=>!isFinite(x)))return;
+    const m=mapNums(v);
+    if(!m)return;
+    const name=(s+" "+toks.slice(0,m.i).join(" ")).replace(/[\s.,;:|-]+$/,"").trim();
+    if(!name||name.length<2)return;
+    if(/^(pos|platz|pl|rang|team|verein|club|mannschaft|#|nr)$/i.test(name))return;
+    teams.push({name,pld:m.pld,gf:m.gf,ga:m.ga});
+  });
+  return teams;
+}
+
+$("pasteToggle").addEventListener("click",()=>{
+  const b=$("pasteBox"),open=b.style.display!=="none";
+  b.style.display=open?"none":"block";
+  $("pasteToggle").textContent=(open?"▸":"▾")+" Tabelle stattdessen selbst einfügen (ohne Abruf)";
+});
+$("backupToggle").addEventListener("click",()=>{
+  const b=$("backupBox"),open=b.style.display!=="none";
+  b.style.display=open?"none":"block";
+  $("backupToggle").textContent=(open?"▸":"▾")+" Sicherung: alle Daten exportieren / einlesen";
+});
+
+$("parseBtn").addEventListener("click",async()=>{
+  const teams=parsePastedTable($("pasteArea").value);
+  if(teams.length<2){
+    showStatus("err","Es ließen sich keine Teamzeilen erkennen. Pro Zeile sollte ein Teamname mit Zahlen stehen, z. B.: <b>Celtic 25 60 15</b> (Team, Spiele, Tore, Gegentore).");
+    return;
+  }
+  const totG=teams.reduce((s,t)=>s+t.gf,0), totP=teams.reduce((s,t)=>s+t.pld,0);
+  const store_={ts:Date.now(),de:(activeLeague?activeLeague.de:"Eingefügte Tabelle"),
+    en:"",season:"",source:"selbst eingefügt",teams,avg:totP>0?totG/totP:1.4,
+    str:activeLeague?activeLeague.str:1};
+  if(activeLeague){await cacheSet(activeLeague.id,store_);await markCached();}
+  showStatus("ok",applyLeagueData(store_,"aus deiner Eingabe übernommen")
+    +(activeLeague?"":"<br>Tipp: erst eine Liga oben antippen, dann wird die Eingabe dort als Rückfall gesichert."));
+});
+
+// ============ Tabelle laden ============
+function tablePrompt(L,seasons){
+  return `Hole die Ligatabelle aus der englischen Wikipedia.
+
+Artikel (erste Wahl): "${L.wiki.replace("{S}",seasons[0])}"
+Falls dieser Artikel noch keine Tabelle mit gespielten Spielen hat (Saison noch nicht gestartet), nimm stattdessen: "${L.wiki.replace("{S}",seasons[1])}".
+
+Gib fuer JEDES Team der Tabelle an: name (englische Schreibweise), pld (gespielte Spiele), gf (erzielte Tore), ga (Gegentore). Uebernimm die Zahlen exakt aus der Tabelle.
+
+Fasse dich kurz: keine Erklaerungen, keine Ueberschriften, nur das JSON.
+{"season":"...","source":"Wikipedia-Artikeltitel","teams":[{"name":"...","pld":0,"gf":0,"ga":0}]}`;
+}
+
+// Quellenkette: OpenLigaDB (deutsche Ligen) → Wikipedia-Saisonartikel → Websuche.
+// Die ersten beiden brauchen keinen Schluessel und kein Kontingent.
+async function loadTable(L){
+  const btn=$("refreshBtn");
+  btn.disabled=true;btn.classList.add("loading");
+  const seasons=seasonCands(L.sy);
+  const errs=[];let res=null;
+  const stand=leagueTeams.length&&leagueMeta.ts
+    ?'<br><span style="color:var(--faint)">angezeigt wird solange der Speicherstand von '+ageTxt(leagueMeta.ts)+'</span>':"";
+  const step=t=>showStatus("info","<b>"+esc(L.de)+"</b> — "+t+" …"+stand
+    +(errs.length?'<br><span style="color:var(--faint)">'+errs.map(x=>"· "+esc(x)).join("<br>")+'</span>':""));
+
+  if(L.ol){
+    const y=seasonStartYear();
+    for(const yr of [y,y-1]){
+      try{
+        step("OpenLigaDB, Saison "+yr+"/"+String(yr+1).slice(2));
+        res={season:yr+"/"+String(yr+1).slice(2),source:"OpenLigaDB",teams:await loadOpenLiga(L.ol,yr)};
+        break;
+      }catch(e){errs.push("OpenLigaDB "+yr+": "+String(e.message||e).slice(0,70));}
+    }
+  }
+  // Eine Tabelle nach ein, zwei Spieltagen sagt nichts. Artikeltitel und
+  // tatsaechlicher Saisonstand gehen auf Wikipedia gelegentlich auseinander,
+  // deshalb entscheidet die Zahl der gespielten Spiele, nicht der Titel.
+  // Nach der erwarteten Schreibweise auch die andere versuchen: Ligen wechseln
+  // gelegentlich zwischen Kalenderjahr und Übergreifsaison (J.League 2026/27).
+  const alle=seasons.concat(seasonCands(L.sy?0:1));
+  let best=null;
+  for(let i=0;i<alle.length&&!res;i++){
+    const title=L.wiki.replace("{S}",alle[i]);
+    try{
+      step("Wikipedia: "+esc(title));
+      const w=await loadWiki(title);
+      let maxP=0;w.teams.forEach(t=>{if(t.pld>maxP)maxP=t.pld;});
+      const cand={season:alle[i],source:"Wikipedia · "+w.article,teams:w.teams,maxP,fit:w.fit};
+      if(maxP>=3){res=cand;break;}
+      if(!best||maxP>best.maxP)best=cand;
+      errs.push(title+": erst "+maxP+" Spieltag(e) gespielt — sehe in der Vorsaison nach");
+    }catch(e){errs.push(title+": "+String(e.message||e).slice(0,70));}
+  }
+  if(!res&&best)res=best;
+  // Websuche nur noch als letzter Ausweg (z. B. wenn der direkte Abruf blockiert ist)
+  if(!res){
+    try{
+      step("Websuche als letzter Versuch");
+      const raw=await callClaude(tablePrompt(L,seasons),{maxTokens:4000,maxUses:2,domains:["en.wikipedia.org"]});
+      const j=extractJson(raw)||{teams:salvageTeams(raw)};
+      if(j&&Array.isArray(j.teams)&&j.teams.length>=4)res={season:j.season||seasons[0],source:j.source||"Websuche",teams:j.teams};
+      else errs.push("Websuche: keine Tabelle erkannt");
+    }catch(e){
+      const sal=e.rawBody?salvageTeams(unescapeBody(e.rawBody)):[];
+      if(sal.length>=4)res={season:"",source:"Websuche (Teilantwort gerettet)",teams:sal};
+      else errs.push("Websuche: "+String(e.message||e).slice(0,70));
+    }
+  }
+  btn.disabled=false;btn.classList.remove("loading");
+
+  if(!res){
+    showStatus("err","<b>Tabelle konnte nicht geladen werden.</b>"
+      +'<br>'+errs.map(x=>"· "+esc(x)).join("<br>")
+      +'<br><br>Nochmal antippen hilft manchmal. Sicher funktioniert immer: die Tabelle unten selbst einfügen.');
+    $("pasteBox").style.display="block";
+    $("pasteToggle").textContent="▾ Tabelle stattdessen selbst einfügen (ohne Abruf)";
+    return null;
+  }
+
+  const teams=res.teams.filter(t=>t&&t.name&&+t.pld>0&&isFinite(+t.gf)&&isFinite(+t.ga))
+    .map(t=>{
+      const o={name:String(t.name),pld:+t.pld,gf:+t.gf,ga:+t.ga};
+      if(t.atk>0&&t.def>0){o.atk=+t.atk;o.def=+t.def;}
+      return o;
+    });
+  if(teams.length<4){showStatus("err","Zu wenige gültige Tabellenzeilen gefunden. Bitte nochmal versuchen.");return null;}
+  const totG=teams.reduce((s,t)=>s+t.gf,0), totP=teams.reduce((s,t)=>s+t.pld,0);
+  const data={ts:Date.now(),de:L.de,en:L.en,season:res.season||seasons[0],
+    source:res.source||"",teams,avg:totP>0?totG/totP:1.4,str:L.str||1,fit:res.fit||null};
+  await cacheSet(L.id,data);
+  await markCached();
+  return data;
+}
+
+function applyLeagueData(data,note){
+  if(!(data.str>0))data.str=(activeLeague&&activeLeague.str)||1;   // aeltere Speicherstaende
+  leagueTeams=data.teams;leagueMeta=data;
+  fillTeamSelect();
+  $("selBox").classList.add("show");
+  return "<b>"+esc(data.de)+"</b>"+(data.season?" "+esc(data.season):"")
+    +" — "+leagueTeams.length+" Teams · Ligaschnitt "+data.avg.toFixed(2)+" Tore/Team/Spiel"
+    +(data.source?"<br>Quelle: "+esc(data.source):"")
+    +(data.fit?"<br>Stärken aus <b>"+data.fit.games+" Einzelspielen</b> geschätzt — die Stärke der bisherigen Gegner ist berücksichtigt."
+       +"<br>Heimvorteil dieser Liga: <b>"+data.fit.adv.toFixed(2)+"</b> "
+       +'<button type="button" class="btn sec mini" data-adv="'+data.fit.adv.toFixed(2)+'">übernehmen</button>':"")
+    +(note?"<br>"+note:"")
+    +"<br>Klammerwerte = Tore / Gegentore pro Spiel. Bitte gegen die Quelle prüfen.";
+}
+
+// Bei jedem Antippen wird frisch geladen. Der Speicher ist ausschliesslich
+// Rueckfall fuer den Fall, dass der Abruf scheitert — nie stiller Ersatz.
+async function selectLeague(id){
+  const L=findLeague(id);if(!L)return;
+  activeLeague=L;markActive(id);
+  const cached=await cacheGet(id);
+  // Gespeicherten Stand sofort nutzbar machen, damit man waehrend des Abrufs
+  // schon arbeiten kann — er wird gleich durch frische Zahlen ersetzt.
+  if(cached)applyLeagueData(cached,null);
+  const fresh=await loadTable(L);
+  if(fresh){
+    showStatus("ok",applyLeagueData(fresh,"soeben geladen · Stand "+new Date(fresh.ts).toLocaleString("de-DE",{dateStyle:"short",timeStyle:"short"})));
+    return;
+  }
+  if(cached){
+    showStatus("err","<b>Abruf fehlgeschlagen — es wird auf den Speicher zurückgegriffen.</b>"
+      +"<br>"+applyLeagueData(cached,"<b style=\"color:var(--bad)\">Stand "+ageTxt(cached.ts)+"</b>"
+        +(isStale(cached.ts)?" — diese Zahlen sind vermutlich überholt, bitte gegen die Quelle prüfen":""))
+      +"<br>Mit „Tabelle neu laden“ nochmal versuchen, oder die aktuelle Tabelle unten einfügen.");
+    $("pasteBox").style.display="block";
+    $("pasteToggle").textContent="▾ Tabelle stattdessen selbst einfügen (ohne Abruf)";
+  }
+}
+$("refreshBtn").addEventListener("click",()=>{if(activeLeague)selectLeague(activeLeague.id);});
+
+function fillTeamSelect(){
+  const s=$("selTeam");s.innerHTML="";
+  leagueTeams.forEach((t,i)=>{
+    const o=document.createElement("option");o.value=i;
+    o.textContent=t.name+"  ("+(t.gf/t.pld).toFixed(2)+" / "+(t.ga/t.pld).toFixed(2)+")";
+    s.appendChild(o);
+  });
+  s.selectedIndex=0;
+}
+function setSlot(role){
+  if(!leagueTeams.length)return;
+  const t=leagueTeams[+$("selTeam").value];if(!t)return;
+  const gf=(t.gf/t.pld).toFixed(2),ga=(t.ga/t.pld).toFixed(2),av=leagueMeta.avg.toFixed(2);
+  const str=(leagueMeta.str||1).toFixed(2), pre=role==="home"?"home":"away";
+  $(pre+"Name").value=t.name;$(pre+"For").value=gf;$(pre+"Ag").value=ga;
+  $(pre+"Pld").value=t.pld;$(pre+"Avg").value=av;$(pre+"Str").value=str;
+  // Feinjustierung zuruecksetzen — sie gehoert zum vorherigen Team
+  ["SpPld","SpFor","SpAg","FmPld","FmFor","FmAg"].forEach(k=>{$(pre+k).value=0;});
+  // Gefittete Staerken uebernehmen, wenn die Liga Einzelspiele geliefert hat
+  $(pre+"FitA").value=t.atk>0?t.atk.toFixed(2):0;
+  $(pre+"FitD").value=t.def>0?t.def.toFixed(2):0;
+  set(role==="home"?"slotH":"slotA",t.name+" — "+gf+" / "+ga+" · "+t.pld+" Sp. · "+leagueMeta.de
+    +(t.atk>0?" · gefittet "+t.atk.toFixed(2)+" / "+t.def.toFixed(2):""));
+  recompute();
+}
+$("setHomeBtn").addEventListener("click",()=>setSlot("home"));
+$("setAwayBtn").addEventListener("click",()=>setSlot("away"));
+
+// ============ Heatmap-Grid ============
+(function(){
+  const g=$("grid");
+  g.appendChild(Object.assign(document.createElement("div"),{className:"cell axis"}));
+  for(let h=0;h<SIZE;h++){const c=document.createElement("div");c.className="cell axis";c.textContent=h;g.appendChild(c);}
+  for(let a=0;a<SIZE;a++){
+    const r=document.createElement("div");r.className="cell axis";r.textContent=a;g.appendChild(r);
+    for(let h=0;h<SIZE;h++){const c=document.createElement("div");c.className="cell data";c.id="c_"+h+"_"+a;g.appendChild(c);}
+  }
+})();
+
+// ============ Maerkte ============
+const EXTRA=[
+ {grp:"Tore gesamt"},
+ {id:"xo15",lbl:"Über 1,5 Tore",pair:"xu15",get:P=>P.tot(2)},
+ {id:"xu15",lbl:"Unter 1,5 Tore",pair:"xo15",get:P=>1-P.tot(2)},
+ {id:"xo25",lbl:"Über 2,5 Tore",pair:"xu25",get:P=>P.tot(3)},
+ {id:"xu25",lbl:"Unter 2,5 Tore",pair:"xo25",get:P=>1-P.tot(3)},
+ {id:"xo35",lbl:"Über 3,5 Tore",pair:"xu35",get:P=>P.tot(4)},
+ {id:"xu35",lbl:"Unter 3,5 Tore",pair:"xo35",get:P=>1-P.tot(4)},
+ {id:"xo45",lbl:"Über 4,5 Tore",pair:"xu45",get:P=>P.tot(5)},
+ {id:"xu45",lbl:"Unter 4,5 Tore",pair:"xo45",get:P=>1-P.tot(5)},
+ {grp:"Beide Teams"},
+ {id:"xbtts",lbl:"Beide treffen: Ja",pair:"xnbtts",get:P=>P.sum((h,a)=>h>=1&&a>=1)},
+ {id:"xnbtts",lbl:"Beide treffen: Nein",pair:"xbtts",get:P=>P.sum((h,a)=>h===0||a===0)},
+ {id:"xth15",lbl:"Heimteam über 1,5 Tore",get:P=>P.sum((h)=>h>=2)},
+ {id:"xta15",lbl:"Auswärtsteam über 1,5 Tore",get:P=>P.sum((h,a)=>a>=2)},
+ {id:"xcsh",lbl:"Heimteam ohne Gegentor",get:P=>P.sum((h,a)=>a===0)},
+ {id:"xcsa",lbl:"Auswärtsteam ohne Gegentor",get:P=>P.sum((h)=>h===0)},
+ {grp:"Doppelte Chance &amp; Handicap"},
+ {id:"xdc1x",lbl:"Doppelte Chance 1X",get:P=>P.sum((h,a)=>h>=a)},
+ {id:"xdc12",lbl:"Doppelte Chance 12",get:P=>P.sum((h,a)=>h!==a)},
+ {id:"xdcx2",lbl:"Doppelte Chance X2",get:P=>P.sum((h,a)=>h<=a)},
+ {id:"xhc1",lbl:"Heimsieg mit 2+ Toren",get:P=>P.sum((h,a)=>h-a>=2)},
+ {id:"xhc2",lbl:"Auswärtssieg mit 2+ Toren",get:P=>P.sum((h,a)=>a-h>=2)},
+ {grp:"1. Halbzeit"},
+ {id:"xh1",lbl:"HZ 1 (Heim führt)",get:P=>P.ht((h,a)=>h>a)},
+ {id:"xhx",lbl:"HZ X (Remis)",get:P=>P.ht((h,a)=>h===a)},
+ {id:"xh2",lbl:"HZ 2 (Auswärts führt)",get:P=>P.ht((h,a)=>h<a)},
+ {id:"xhfg",lbl:"Tor in 1. Halbzeit: Ja",pair:"xnfg",get:P=>P.ht((h,a)=>h+a>=1)},
+ {id:"xnfg",lbl:"Tor in 1. Halbzeit: Nein",pair:"xhfg",get:P=>P.ht((h,a)=>h+a===0)},
+ {id:"xho15",lbl:"HZ über 1,5 Tore",get:P=>P.ht((h,a)=>h+a>=2)},
+];
+function mkRow(cont,id,name){
+  const r=document.createElement("div");r.className="mrow";r.id="row_"+id;
+  r.innerHTML='<div class="mlbl"><div class="n">'+esc(name)+'</div>'
+    +'<div class="s">Modell <b id="'+id+'_p">–</b> · fair <b id="'+id+'_f">–</b> · Quote impliziert <b id="'+id+'_i">–</b></div></div>'
+    +'<input type="number" class="modds" id="'+id+'_o" min="1" step="0.01" placeholder="Quote" aria-label="Quote '+esc(name)+'">'
+    +'<span class="badge bad" id="'+id+'_b">Quote?</span>'
+    +'<div class="mkelly" id="'+id+'_k" style="display:none"></div>';
+  cont.appendChild(r);
+}
+function mkGrp(cont,txt){const d=document.createElement("div");d.className="grp";d.innerHTML=txt;cont.appendChild(d);}
+
+const ROWS={};   // id -> {p, o, ev, lbl}
+function updRow(id,p,cfg,newName){
+  const row=$("row_"+id);if(!row)return;
+  if(newName)row.querySelector(".n").textContent=newName;
+  const lbl=row.querySelector(".n").textContent;
+  set(id+"_p",pct(p));
+  set(id+"_f",p>0&&p<1?(1/p).toFixed(2):"–");
+  const o=num(id+"_o"),has=o>1;
+  // Bei Gegenpaaren die Marge herausrechnen
+  let impl=has?1/o:null, dvNote="";
+  if(has&&cfg.pairOdds&&cfg.pairOdds>1){
+    const d=devig([o,cfg.pairOdds]);
+    if(d){impl=d[0];dvNote=" (bereinigt)";}
+  }
+  set(id+"_i",has?pct(impl)+dvNote:"–");
+  const b=$(id+"_b"),k=$(id+"_k");
+  ROWS[id]={p,o:has?o:0,lbl};
+  if(!has){b.className="badge bad";b.textContent="Quote?";row.classList.remove("good");k.style.display="none";return;}
+  const ev=p*o-1,good=ev>0&&p>0&&p<1;
+  ROWS[id].ev=ev;
+  b.className="badge "+(good?"good":"bad");
+  b.textContent=(good?"+":"")+(ev*100).toFixed(1)+"% EV";
+  row.classList.toggle("good",good);
+  if(good){
+    const fU=kelly(p,o,cfg.frac,cfg.cap),full=(p*o-1)/(o-1)*cfg.frac;
+    ROWS[id].stake=cfg.bank*fU;
+    k.style.display="block";
+    k.innerHTML="Kelly: <b>"+(fU*100).toFixed(1)+"% ≈ "+(cfg.bank*fU).toFixed(2)+" €</b>"
+      +(full>cfg.cap?" (gedeckelt)":"")+" — nur gültig, wenn die Modell-Wahrscheinlichkeit stimmt";
+  }else k.style.display="none";
+}
+(function(){
+  const cont=$("extraMarkets");
+  EXTRA.forEach(d=>{if(d.grp)mkGrp(cont,d.grp);else mkRow(cont,d.id,d.lbl);});
+  mkRow($("scorerRow"),"xscorer","Spieler trifft");
+  mkRow($("scorerRow"),"xscorer2","Spieler trifft 2+");
+  mkRow($("qualRows"),"xqh","Heimteam kommt weiter");
+  mkRow($("qualRows"),"xqa","Auswärtsteam kommt weiter");
+})();
+
+// ============ Stärkeberechnung ============
+// Alle Staerken sind dimensionslos: 1,00 = Ligadurchschnitt.
+function teamStrength(pre,lgAvg,adv,K,formW,isHome){
+  const lgHome=lgAvg*adv, lgAway=lgAvg/adv;
+  const fitA=num(pre+"FitA"), fitD=num(pre+"FitD"), hasFit=fitA>0&&fitD>0;
+  // Gefittete Werte beruecksichtigen bereits die Staerke der bisherigen Gegner;
+  // die Regression greift trotzdem, weil auch ein Fit bei wenigen Spielen wackelt.
+  let atk=shrink(hasFit?fitA:num(pre+"For")/lgAvg,num(pre+"Pld"),K);
+  let def=shrink(hasFit?fitD:num(pre+"Ag")/lgAvg,num(pre+"Pld"),K);
+  const used=[];
+  if(hasFit)used.push("Stärke aus Einzelspielen");
+  // Heim-/Auswaertsbilanz: eigene Tore gegen die passende Ligabasis
+  const sp=num(pre+"SpPld");
+  if(sp>0){
+    const w=sp/(sp+K);
+    const baseFor=isHome?lgHome:lgAway, baseAg=isHome?lgAway:lgHome;
+    atk=(1-w)*atk+w*(num(pre+"SpFor")/sp/baseFor);
+    def=(1-w)*def+w*(num(pre+"SpAg")/sp/baseAg);
+    used.push((isHome?"Heim":"Auswärts")+"bilanz "+Math.round(w*100)+"%");
+  }
+  // Form: juengere Spiele staerker gewichten
+  const fp=num(pre+"FmPld");
+  if(fp>0&&formW>0){
+    const w=formW*fp/(fp+3);
+    atk=(1-w)*atk+w*(num(pre+"FmFor")/fp/lgAvg);
+    def=(1-w)*def+w*(num(pre+"FmAg")/fp/lgAvg);
+    used.push("Form "+Math.round(w*100)+"%");
+  }
+  return {atk:clamp(atk,0.15,4),def:clamp(def,0.15,4),used};
+}
+
+// ============ Kernrechnung ============
+let LAST=null;
+function recompute(){
+  const hName=$("homeName").value||"Heim", aName=$("awayName").value||"Auswärts";
+  const hAvg=Math.max(num("homeAvg"),0.1), aAvg=Math.max(num("awayAvg"),0.1);
+  const adv=parseFloat($("homeAdv").value), rho=parseFloat($("rho").value);
+  const K=parseFloat($("shrinkK").value), formW=parseFloat($("formW").value);
+  const blendW=parseFloat($("blendW").value), buf=parseFloat($("buffer").value);
+  set("homeAdvV",adv.toFixed(2));
+  set("rhoV",(rho<0?"−":"")+Math.abs(rho).toFixed(2));
+  set("shrinkKV",K.toFixed(0));
+  set("formWV",Math.round(formW*100)+" %");
+  set("blendWV",Math.round(blendW*100)+" %");
+  set("bufferV",Math.round(buf*100)+" %");
+
+  const H=teamStrength("home",hAvg,adv,K,formW,true);
+  const A=teamStrength("away",aAvg,adv,K,formW,false);
+  const sH=clamp(num("homeStr")||1,0.3,3), sA=clamp(num("awayStr")||1,0.3,3);
+  const rel=sH/sA;
+  const base=(hAvg+aAvg)/2;
+  const lamH=clamp(H.atk*rel*A.def*base*adv,0.05,8);
+  const lamA=clamp(A.atk/rel*H.def*base/adv,0.05,8);
+  set("lamH",lamH.toFixed(2));set("lamA",lamA.toFixed(2));
+
+  const notes=[];
+  notes.push("Angriff/Abwehr (1,00 = Ligaschnitt) — <b>"+esc(hName)+"</b>: "+H.atk.toFixed(2)+" / "+H.def.toFixed(2)
+    +" · <b>"+esc(aName)+"</b>: "+A.atk.toFixed(2)+" / "+A.def.toFixed(2));
+  const mods=H.used.concat(A.used);
+  if(mods.length)notes.push("Berücksichtigt: "+esc(mods.join(" · ")));
+  if(num("homePld")>0||num("awayPld")>0){
+    const wH=num("homePld")>0?num("homePld")/(num("homePld")+K):1;
+    const wA=num("awayPld")>0?num("awayPld")/(num("awayPld")+K):1;
+    if(Math.min(wH,wA)<0.95)notes.push("Regression zum Ligamittel: Heim "+Math.round((1-wH)*100)+" % · Auswärts "+Math.round((1-wA)*100)+" %"
+      +(Math.min(wH,wA)<0.75?" — dünne Stichprobe, die Werte werden bewusst vorsichtig gerechnet":""));
+  }else{
+    notes.push("<span style=\"color:var(--faint)\">Feld „Spiele“ ist 0 — ohne Stichprobengröße keine Regression. Beim Setzen aus einer Tabelle wird es gefüllt.</span>");
+  }
+  if(Math.abs(rel-1)>0.005)notes.push("Ligastärke "+sH.toFixed(2)+" gegen "+sA.toFixed(2)+" → Faktor <b>"+rel.toFixed(2)+"</b> auf die Heim-Erwartung (grobe Schätzung).");
+  else if(Math.abs(hAvg-aAvg)>0.001)notes.push("Verschiedene Ligaschnitte, aber gleiche Ligastärke — prüfen, ob das gewollt ist.");
+  $("strengthNote").innerHTML=notes.join("<br>");
+
+  const M=scoreMatrix(lamH,lamA,rho,N);
+  const MH=scoreMatrix(lamH*FH_SHARE,lamA*FH_SHARE,rho,8);
+  const P={
+    sum:pred=>sumM(M,pred),
+    ht:pred=>sumM(MH,pred),
+    tot:n=>sumM(M,(h,a)=>h+a>=n),
+    lamH,lamA
+  };
+  const pmH=P.sum((h,a)=>h>a), pmD=P.sum((h,a)=>h===a), pmA=P.sum((h,a)=>h<a);
+
+  // Markt: Marge herausrechnen und optional beimischen
+  const oH=num("oH"),oD=num("oD"),oA=num("oA");
+  const mkt=devig([oH,oD,oA]);
+  let pH=pmH,pD=pmD,pA=pmA,blended=false;
+  if(mkt&&blendW>0){
+    pH=(1-blendW)*pmH+blendW*mkt[0];
+    pD=(1-blendW)*pmD+blendW*mkt[1];
+    pA=(1-blendW)*pmA+blendW*mkt[2];
+    const s=pH+pD+pA;pH/=s;pD/=s;pA/=s;blended=true;
+  }
+  if(mkt){
+    $("marginNote").innerHTML="Buchmacher-Marge (Overround): <b>"+((1/oH+1/oD+1/oA-1)*100).toFixed(1)+"%</b>"
+      +" · margenbereinigt <b>"+pct(mkt[0])+" / "+pct(mkt[1])+" / "+pct(mkt[2])+"</b>";
+  }else{
+    $("marginNote").innerHTML="Trage die drei Quoten ein, um die Buchmacher-Marge zu sehen.";
+  }
+  $("blendNote").innerHTML=blended
+    ? "Angezeigt: <b>"+Math.round((1-blendW)*100)+" % Modell + "+Math.round(blendW*100)+" % Markt</b>. Reines Modell: "
+      +pct(pmH)+" / "+pct(pmD)+" / "+pct(pmA)+". Der Marktanteil dämpft die ausgewiesenen Value-Chancen — bewusst so."
+    : (mkt?"Markt-Anteil steht auf 0 % — angezeigt wird das reine Modell. Margenbereinigter Markt: "+pct(mkt[0])+" / "+pct(mkt[1])+" / "+pct(mkt[2])
+        :"Ohne alle drei Quoten in Abschnitt 6 ist keine Mischung möglich — angezeigt wird das reine Modell.");
+
+  const showBar=(p,idP,idF,idBar,idMk,pm)=>{
+    set(idP,pct(p));set(idF,p>0?(1/p).toFixed(2):"–");
+    $(idBar).style.width=(p*100)+"%";
+    const mk=$(idMk);
+    if(blended){mk.style.display="block";mk.style.left="calc("+(pm*100)+"% - 1px)";mk.title="reines Modell";}
+    else mk.style.display="none";
+  };
+  showBar(pH,"pH","fH","barH","mkH",pmH);
+  showBar(pD,"pD","fD","barD","mkD",pmD);
+  showBar(pA,"pA","fA","barA","mkA",pmA);
+  set("pOver",pct(P.tot(3)));set("pBtts",pct(P.sum((h,a)=>h>=1&&a>=1)));
+
+  // Heatmap + haeufigste Ergebnisse
+  let mx=0,pkH=0,pkA=0,peak=0;
+  const flat=[];
+  for(let h=0;h<=N;h++)for(let a=0;a<=N;a++){
+    flat.push({h,a,p:M[h][a]});
+    if(M[h][a]>peak){peak=M[h][a];pkH=h;pkA=a;}
+  }
+  for(let h=0;h<SIZE;h++)for(let a=0;a<SIZE;a++)mx=Math.max(mx,M[h][a]);
+  for(let h=0;h<SIZE;h++)for(let a=0;a<SIZE;a++){
+    const c=$("c_"+h+"_"+a),p=M[h][a],al=mx>0?p/mx:0;
+    c.style.background="rgba(244,185,66,"+(0.06+al*0.82).toFixed(3)+")";
+    c.style.color=al>0.5?"#1a1205":"var(--ink)";
+    c.textContent=(p*100)>=1?Math.round(p*100):"";
+    c.classList.toggle("peak",h===pkH&&a===pkA);
+  }
+  set("peakLbl","wahrsch. "+pkH+":"+pkA+" ("+pct(peak)+")");
+  flat.sort((x,y)=>y.p-x.p);
+  $("csList").innerHTML=flat.slice(0,8).map(f=>
+    '<div class="cs"><b>'+f.h+':'+f.a+'</b> '+(f.p*100).toFixed(1)+'%<div class="f">fair '+(1/f.p).toFixed(1)+'</div></div>').join("");
+
+  // Mindestquoten
+  const mo=(p,v,f)=>{if(p>0){set(f,(1/p).toFixed(2));set(v,((1+buf)/p).toFixed(2));}else{set(f,"–");set(v,"–");}};
+  mo(pH,"mH","mHf");mo(pD,"mD","mDf");mo(pA,"mA","mAf");
+
+  // 1X2-Value
+  const bank=num("bankroll"),frac=parseFloat($("kellyFrac").value),cap=parseFloat($("kcap").value);
+  const cfg={bank,frac,cap};
+  const box=$("verdicts");box.innerHTML="";
+  const main=[{k:"1X2_H",l:"1 · "+hName,p:pH,o:oH},{k:"1X2_D",l:"X · Remis",p:pD,o:oD},{k:"1X2_A",l:"2 · "+aName,p:pA,o:oA}];
+  main.forEach(r=>{
+    const has=r.o>1, ev=has?r.p*r.o-1:0, good=has&&ev>0;
+    ROWS[r.k]={p:r.p,o:has?r.o:0,lbl:r.l,ev};
+    let kh="";
+    if(good){
+      const fU=kelly(r.p,r.o,frac,cap),full=(r.p*r.o-1)/(r.o-1)*frac;
+      ROWS[r.k].stake=bank*fU;
+      kh='<div class="kelly">Kelly: <b>'+(fU*100).toFixed(1)+'% der Bankroll ≈ '+(bank*fU).toFixed(2)+' €</b>'
+        +(full>cap?' (gedeckelt)':'')+'<br><span style="color:var(--faint)">nur gültig, wenn die Modell-Wahrscheinlichkeit stimmt</span></div>';
+    }else if(has){
+      kh='<div class="kelly" style="color:var(--faint)">Kelly: 0 % — kein positiver Erwartungswert, also kein Einsatz.</div>';
+    }
+    const el=document.createElement("div");
+    el.className="verdict"+(good?" good":"");
+    el.innerHTML='<div class="toprow"><span class="lbl">'+esc(r.l)+'</span>'
+      +'<span class="badge '+(good?"good":"bad")+'">'+(has?((good?"+":"")+(ev*100).toFixed(1)+"% EV"):"Quote?")+'</span></div>'
+      +'<div class="mid">Modell <b>'+pct(r.p)+'</b> · Quote impliziert <b>'+(has?pct(1/r.o):"–")+'</b>'
+      +(mkt?' · margenbereinigt <b>'+pct(mkt[main.indexOf(r)])+'</b>':'')+'</div>'+kh;
+    box.appendChild(el);
+  });
+
+  // Zusatzmaerkte
+  EXTRA.forEach(d=>{
+    if(d.grp)return;
+    const c=Object.assign({},cfg);
+    if(d.pair)c.pairOdds=num(d.pair+"_o");
+    updRow(d.id,d.get(P),c);
+  });
+
+  // Torschuetze
+  const lamTeam=$("teamSel").value==="home"?lamH:lamA;
+  const share=num("tGoals")>0?clamp(num("sGoals")/num("tGoals"),0,1):0;
+  const xg=lamTeam*share*clamp(num("sMin"),0,1.2);
+  const who=($("sName").value.trim()||"Spieler");
+  updRow("xscorer",1-Math.exp(-xg),cfg,who+" trifft");
+  updRow("xscorer2",1-Math.exp(-xg)*(1+xg),cfg,who+" trifft 2+");
+
+  // Weiterkommen
+  const ret=$("qualMode").value==="return", etOn=$("etOn").value==="1";
+  const lH=ret?Math.max(0,Math.round(num("legH"))):0, lA=ret?Math.max(0,Math.round(num("legA"))):0;
+  let wTieH=0.5;
+  if(etOn){
+    const ME=scoreMatrix(lamH*ET_SHARE,lamA*ET_SHARE,rho,8);
+    const eH=sumM(ME,(h,a)=>h>a), eA=sumM(ME,(h,a)=>h<a), eD=1-eH-eA;
+    wTieH=eH+eD*0.5;    // Elfmeterschießen 50/50
+    $("qualNote").innerHTML="Bei Gleichstand nach 90 Minuten: 30 Minuten Verlängerung mit einem Drittel der Tor-Erwartung, danach Elfmeterschießen 50/50 → Heimteam kommt aus dieser Lage mit <b>"+pct(wTieH)+"</b> weiter.";
+  }else{
+    $("qualNote").innerHTML="Bei Gleichstand wird 50/50 gewertet (keine Verlängerung gerechnet).";
+  }
+  let qH=0,qA=0;
+  for(let h=0;h<=N;h++)for(let a=0;a<=N;a++){
+    const p=M[h][a],gH=h+lH,gA=a+lA;
+    if(gH>gA)qH+=p;else if(gH<gA)qA+=p;else{qH+=p*wTieH;qA+=p*(1-wTieH);}
+  }
+  updRow("xqh",qH,cfg,hName+" kommt weiter");
+  updRow("xqa",qA,cfg,aName+" kommt weiter");
+
+  LAST={hName,aName,lamH,lamA};
+}
+
+// ============ Journal ============
+let journal=[];
+async function loadJournal(){
+  try{const v=await store.get(JKEY);journal=v?JSON.parse(v):[];}catch(_){journal=[];}
+  if(!Array.isArray(journal))journal=[];
+  renderJournal();
+}
+async function saveJournal(){await store.set(JKEY,JSON.stringify(journal));renderJournal();}
+function dstr(ts){const d=new Date(ts);return String(d.getDate()).padStart(2,"0")+"."+String(d.getMonth()+1).padStart(2,"0")+"."+d.getFullYear();}
+
+$("jAddBtn").addEventListener("click",()=>{
+  const match=(LAST?LAST.hName+" – "+LAST.aName:"Spiel");
+  const added=[];
+  Object.keys(ROWS).forEach(k=>{
+    const r=ROWS[k];
+    if(r&&r.o>1&&r.ev>0){
+      journal.push({id:Date.now()+"_"+k,ts:Date.now(),match,lbl:r.lbl,p:r.p,o:r.o,
+        stake:+(r.stake||0).toFixed(2),res:"open"});
+      added.push(r.lbl);
+    }
+  });
+  if(!added.length){alert("Keine Wette mit positivem Erwartungswert vorhanden. Erst Quoten eintragen.");return;}
+  saveJournal();
+});
+$("jClearBtn").addEventListener("click",()=>{
+  if(!journal.length)return;
+  if(confirm("Alle "+journal.length+" Journal-Einträge löschen?")){journal=[];saveJournal();}
+});
+$("jCsvBtn").addEventListener("click",()=>{
+  const ta=$("jCsv");
+  if(ta.style.display!=="none"){ta.style.display="none";return;}
+  ta.value="Datum;Spiel;Markt;Modell_p;Quote;Einsatz;Ergebnis\n"+journal.map(e=>
+    [dstr(e.ts),e.match,e.lbl,e.p.toFixed(4),e.o.toFixed(2),e.stake.toFixed(2),e.res].join(";")).join("\n");
+  ta.style.display="block";
+});
+function setRes(id,res){
+  const e=journal.find(x=>x.id===id);if(!e)return;
+  e.res=(e.res===res)?"open":res;
+  saveJournal();
+}
+function renderJournal(){
+  const t=$("jTable");
+  if(!journal.length){
+    t.innerHTML='<tr><td style="color:var(--faint);padding:14px 6px">Noch keine Einträge. Quoten eintragen und oben „Aktuelle Value-Wetten übernehmen“ drücken.</td></tr>';
+  }else{
+    let h='<tr><th>Datum</th><th>Spiel / Markt</th><th class="r">Modell</th><th class="r">Quote</th><th class="r">Einsatz</th><th>Ausgang</th></tr>';
+    journal.slice().reverse().forEach(e=>{
+      h+='<tr><td>'+dstr(e.ts)+'</td><td>'+esc(e.match)+'<br><span style="color:var(--faint)">'+esc(e.lbl)+'</span></td>'
+        +'<td class="r">'+pct(e.p)+'</td><td class="r">'+e.o.toFixed(2)+'</td><td class="r">'+e.stake.toFixed(2)+' €</td>'
+        +'<td><button class="jbtn w'+(e.res==="win"?" on":"")+'" data-w="'+e.id+'">gew.</button>'
+        +'<button class="jbtn l'+(e.res==="lose"?" on":"")+'" data-l="'+e.id+'">verl.</button></td></tr>';
+    });
+    t.innerHTML=h;
+    t.querySelectorAll("[data-w]").forEach(b=>b.addEventListener("click",()=>setRes(b.dataset.w,"win")));
+    t.querySelectorAll("[data-l]").forEach(b=>b.addEventListener("click",()=>setRes(b.dataset.l,"lose")));
+  }
+  // Kennzahlen
+  const s=journal.filter(e=>e.res==="win"||e.res==="lose");
+  const staked=s.reduce((a,e)=>a+e.stake,0);
+  const profit=s.reduce((a,e)=>a+(e.res==="win"?e.stake*(e.o-1):-e.stake),0);
+  const hits=s.filter(e=>e.res==="win").length;
+  const expH=s.reduce((a,e)=>a+e.p,0);
+  const brier=s.length?s.reduce((a,e)=>a+Math.pow(e.p-(e.res==="win"?1:0),2),0)/s.length:0;
+  const cards=[
+    ["Einträge",journal.length+" · "+s.length+" gew."],
+    ["Treffer",s.length?hits+" von "+s.length:"–"],
+    ["Modell erwartet",s.length?expH.toFixed(1)+" Treffer":"–"],
+    ["Einsatz",staked.toFixed(2)+" €"],
+    ["Bilanz",(profit>=0?"+":"")+profit.toFixed(2)+" €"],
+    ["Rendite",staked>0?((profit/staked)*100).toFixed(1)+" %":"–"],
+    ["Brier-Score",s.length?brier.toFixed(3):"–"]
+  ];
+  $("jStats").innerHTML=cards.map(c=>'<div class="jstat"><div class="k">'+c[0]+'</div><div class="v"'
+    +(c[0]==="Bilanz"&&s.length?' style="color:'+(profit>=0?"var(--good)":"var(--bad)")+'"':'')
+    +'>'+esc(c[1])+'</div></div>').join("");
+
+  // Kalibrierung in Bändern
+  if(s.length<5){
+    $("jCal").innerHTML="Kalibrierung erscheint ab 5 gewerteten Wetten. Sie vergleicht, was das Modell versprochen hat, mit dem, was eingetreten ist — das ist der eigentliche Test. Ein Brier-Score unter 0,25 ist besser als Münzwurf; entscheidend ist aber die Rendite gegen die Quote.";
+  }else{
+    const bands=[[0,.2],[.2,.4],[.4,.6],[.6,.8],[.8,1.01]];
+    const rows=bands.map(([lo,hi])=>{
+      const g=s.filter(e=>e.p>=lo&&e.p<hi);
+      if(!g.length)return null;
+      const avg=g.reduce((a,e)=>a+e.p,0)/g.length, hit=g.filter(e=>e.res==="win").length/g.length;
+      return "· "+Math.round(lo*100)+"–"+Math.round(hi*100)+" %: n="+g.length
+        +" · Modell ⌀ "+pct(avg)+" · eingetreten "+pct(hit)
+        +(Math.abs(avg-hit)>0.15?" <span style=\"color:var(--bad)\">(Abweichung)</span>":"");
+    }).filter(Boolean);
+    $("jCal").innerHTML="<b>Kalibrierung</b> — sagt das Modell die Häufigkeiten richtig voraus?<br>"+rows.join("<br>")
+      +"<br><span style=\"color:var(--faint)\">Bei kleinen n schwankt das stark. Systematisch zu hohe Modellwerte bedeuten: Value ist eingebildet, Einsätze zu groß.</span>";
+  }
+}
+
+// ============ Sicherung ============
+$("exportBtn").addEventListener("click",async()=>{
+  const out={v:1,ts:Date.now(),tables:{},journal};
+  for(const s of LEAGUES)for(const L of s.items){
+    const c=await cacheGet(L.id);if(c)out.tables[L.id]=c;
+  }
+  $("backupArea").value=JSON.stringify(out);
+});
+$("importBtn").addEventListener("click",async()=>{
+  let d;
+  try{d=JSON.parse($("backupArea").value);}catch(_){alert("Das ist kein gültiger Export-Text.");return;}
+  if(!d||typeof d!=="object"){alert("Das ist kein gültiger Export-Text.");return;}
+  let n=0;
+  if(d.tables)for(const k of Object.keys(d.tables)){if(findLeague(k)){await cacheSet(k,d.tables[k]);n++;}}
+  if(Array.isArray(d.journal)){journal=d.journal;await saveJournal();}
+  await markCached();
+  showStatus("ok","Sicherung eingelesen: <b>"+n+" Tabelle(n)</b> und "+(Array.isArray(d.journal)?d.journal.length:0)+" Journal-Einträge.");
+});
+
+// Heimvorteil aus der geladenen Liga uebernehmen
+$("tblStatus").addEventListener("click",e=>{
+  const b=e.target&&e.target.getAttribute&&e.target.getAttribute("data-adv");
+  if(!b)return;
+  $("homeAdv").value=b;recompute();
+  e.target.textContent="übernommen";
+});
+
+// ============ Start ============
+document.querySelectorAll("#calcArea input, #calcArea select").forEach(el=>{
+  el.addEventListener("input",recompute);
+  el.addEventListener("change",recompute);
+});
+buildLeagueGrid();
+store.get(MKEY).then(m=>{if(m&&MODELS.indexOf(m)>=0)apiModel=m;});
+markCached();
+loadJournal();
+recompute();
+</script>
+</body>
+</html>
