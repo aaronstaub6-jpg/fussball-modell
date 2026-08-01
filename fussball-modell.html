@@ -879,6 +879,65 @@ function tableRows(t){
     return cells.join(" ");
   }).filter(x=>(x.match(/\d+/g)||[]).length>=6);
 }
+// ============ Teilnehmerliste ============
+// Zu Saisonbeginn gibt es noch keine Tabelle, aber immer schon eine Liste der
+// Mannschaften mit Stadion. Ohne sie fehlen Aufsteiger komplett.
+function parseRoster(html){
+  const tables=html.match(/<table[\s\S]*?<\/table>/g)||[];
+  for(const t of tables){
+    const rows=t.match(/<tr[\s\S]*?<\/tr>/g)||[];
+    if(rows.length<5)continue;
+    const heads=(rows[0].match(/<th[\s\S]*?<\/th>/g)||[])
+      .map(x=>decodeEnt(x.replace(/<[^>]*>/g," ")).replace(/\s+/g," ").trim());
+    const col=heads.findIndex(h=>/^(club|team|club name)$/i.test(h));
+    if(col<0)continue;
+    if(!heads.some(h=>/stadium|venue|ground|capacity|location/i.test(h)))continue;
+    const names=[];
+    for(let r=1;r<rows.length;r++){
+      const cells=(rows[r].match(/<t[dh][\s\S]*?<\/t[dh]>/g)||[]).map(c=>decodeEnt(c
+        .replace(/<sup[\s\S]*?<\/sup>/g,"").replace(/<[^>]*>/g," "))
+        .replace(/\[[^\]]*\]/g,"").replace(/\s+/g," ").trim());
+      const nm=cells[col];
+      if(nm&&nm.length>1&&!/^\d+$/.test(nm)&&names.indexOf(nm)<0)names.push(nm);
+    }
+    if(names.length>=4)return names;
+  }
+  return null;
+}
+
+// Namensabgleich zwischen Teilnehmerliste und Vorsaisontabelle.
+// "Rheindorf Altach" und "SCR Altach" sind derselbe Verein, "Austria Wien"
+// und "Austria Lustenau" nicht — deshalb zaehlt nur ein eindeutiges Kennwort.
+const GENERIC=/^(fc|sc|scr|sk|sv|sp|tsv|vfb|vfl|ac|as|afc|cf|cd|us|ss|fk|nk|hnk|mfk|bk|if|ik|ff|club|united|city|town|1|2|ii|b)$/i;
+function nameTokens(s){
+  return String(s).toLowerCase()
+    .replace(/[.,()'`´]/g," ").replace(/\s+/g," ").trim().split(" ")
+    .filter(w=>w.length>2&&!GENERIC.test(w));
+}
+function matchRoster(rosterNames,teams){
+  const norm=s=>String(s).toLowerCase().replace(/\s+/g," ").trim();
+  const byExact={};teams.forEach(t=>{byExact[norm(t.name)]=t;});
+  // Kennwoerter zaehlen: nur was in beiden Listen genau einmal vorkommt, taugt
+  const rc={},tc={};
+  rosterNames.forEach(n=>nameTokens(n).forEach(w=>rc[w]=(rc[w]||0)+1));
+  teams.forEach(t=>nameTokens(t.name).forEach(w=>tc[w]=(tc[w]||0)+1));
+  const out=[],used=[];
+  rosterNames.forEach(n=>{
+    let hit=byExact[norm(n)];
+    if(!hit){
+      const key=nameTokens(n).filter(w=>rc[w]===1&&tc[w]===1)[0];
+      if(key)hit=teams.filter(t=>nameTokens(t.name).indexOf(key)>=0)[0];
+    }
+    if(hit&&used.indexOf(hit)<0){
+      used.push(hit);
+      out.push({name:n,pld:hit.pld,gf:hit.gf,ga:hit.ga,atk:hit.atk,def:hit.def});
+    }else{
+      out.push({name:n,pld:0,gf:0,ga:0,neu:true});
+    }
+  });
+  return out;
+}
+
 // ============ Einzelspiele aus der Ergebnis-Kreuztabelle ============
 // Die Saisonartikel enthalten eine Matrix "Heim \ Auswärts" mit jedem Ergebnis.
 // Daraus laesst sich die Staerke jeder Mannschaft gegen die tatsaechlich
@@ -973,12 +1032,15 @@ function fitStrengths(n,matches,iter){
 // Taucht ein Team in mehreren Tabellen auf (Hauptrunde + Meisterrunde),
 // zaehlt die Zeile mit den meisten Spielen.
 function dedupeTeams(teams){
-  const by={};
+  const by={},tbls={};
   teams.forEach(t=>{
     const k=t.name.toLowerCase().replace(/\s+/g," ").trim();
+    if(!tbls[k])tbls[k]=[];
+    if(t.tbl!==undefined&&tbls[k].indexOf(t.tbl)<0)tbls[k].push(t.tbl);
     if(!by[k]||t.pld>by[k].pld)by[k]=t;
   });
-  const list=Object.keys(by).map(k=>by[k]);
+  Object.keys(by).forEach(k=>{by[k].tbls=tbls[k];});
+  let list=Object.keys(by).map(k=>by[k]);
   // Kurzform in eindeutiger Langform aufgehen lassen: "San Martín" → "San Martín (SJ)".
   // Nur wenn es genau eine Langform gibt — sonst waeren es zwei verschiedene Vereine.
   const drop=[];
@@ -987,7 +1049,31 @@ function dedupeTeams(teams){
     const longer=list.filter(b=>b!==a&&b.name.toLowerCase().indexOf(pre)===0);
     if(longer.length===1&&longer[0].pld>a.pld)drop.push(a);
   });
-  return list.filter(x=>drop.indexOf(x)<0);
+  list=list.filter(x=>drop.indexOf(x)<0);
+  // Schreibweisen zusammenfuehren: "TSV Hartberg" und "Hartberg", "SCR Altach"
+  // und "Rheindorf Altach". Nur ueber Tabellengrenzen hinweg — innerhalb einer
+  // Tabelle sind aehnliche Namen verschiedene Vereine ("Omonia" gegen
+  // "Omonia Aradippou").
+  const tok=list.map(t=>nameTokens(t.name));
+  const gone=[];
+  for(let i=0;i<list.length;i++)for(let j=0;j<list.length;j++){
+    if(i===j||!tok[i].length||gone.indexOf(list[i])>=0||gone.indexOf(list[j])>=0)continue;
+    // Bedingung: die beiden Namen tauchen in keiner gemeinsamen Tabelle auf.
+    // "Omonia" und "Omonia Aradippou" stehen beide in der Hauptrunde und sind
+    // deshalb verschiedene Vereine; "Hartberg" und "TSV Hartberg" nie.
+    const ti=list[i].tbls||[],tj=list[j].tbls||[];
+    if(!ti.length||!tj.length||ti.some(x=>tj.indexOf(x)>=0))continue;
+    const sub=tok[i].every(w=>tok[j].indexOf(w)>=0);
+    if(!sub)continue;
+    const dritte=list.some((x,k)=>k!==i&&k!==j&&tok[i].some(w=>tok[k].indexOf(w)>=0));
+    if(dritte)continue;
+    // laengeren Namen und die Zeile mit mehr Spielen behalten
+    const keep=list[i].pld>=list[j].pld?list[i]:list[j];
+    const other=keep===list[i]?list[j]:list[i];
+    keep.name=list[i].name.length>=list[j].name.length?list[i].name:list[j].name;
+    gone.push(other);
+  }
+  return list.filter(x=>gone.indexOf(x)<0);
 }
 async function loadWiki(title){
   const u="https://en.wikipedia.org/w/api.php?action=parse&prop=text&format=json&formatversion=2"
@@ -999,12 +1085,15 @@ async function loadWiki(title){
   if(j.error)throw new Error("Artikel nicht gefunden");
   const src=j.parse&&j.parse.text;
   const tabs=wikiTables(typeof src==="string"?src:(src&&src["*"])||"");
-  let teams=dedupeTeams(parsePastedTable(wikiRows(typeof src==="string"?src:(src&&src["*"])||"").join("\n")));
+  const alleZeilen=[];
+  tabs.forEach((rows,ti)=>parsePastedTable(rows.join("\n")).forEach(t=>{t.tbl=ti;alleZeilen.push(t);}));
+  let teams=dedupeTeams(alleZeilen);
   // Manche Artikel fassen mehrere Spielklassen zusammen (z. B. National League
   // mit North und South). Keine einzelne Liga hat über 40 Mannschaften — dann
   // ist nur die erste Tabelle gemeint.
   if(teams.length>40&&tabs.length>1)teams=dedupeTeams(parsePastedTable(tabs[0].join("\n")));
-  if(teams.length<4)throw new Error("noch keine Tabelle im Artikel");
+  const roster=parseRoster(typeof src==="string"?src:(src&&src["*"])||"");
+  if(teams.length<4)return {teams:[],roster,fit:null,article:(j.parse&&j.parse.title)||title};
   // Einzelspiele auswerten, wenn der Artikel die Ergebnismatrix hat
   const g=parseResultsGrid(typeof src==="string"?src:(src&&src["*"])||"");
   let fit=null;
@@ -1023,7 +1112,7 @@ async function loadWiki(title){
       else teams.forEach(t=>{delete t.atk;delete t.def;delete t.fitPld;});
     }
   }
-  return {teams,fit,article:(j.parse&&j.parse.title)||title};
+  return {teams,fit,roster,article:(j.parse&&j.parse.title)||title};
 }
 
 // ============ OpenLigaDB (frei, ohne Schlüssel) ============
@@ -1155,13 +1244,15 @@ async function loadTable(L){
   // Nach der erwarteten Schreibweise auch die andere versuchen: Ligen wechseln
   // gelegentlich zwischen Kalenderjahr und Übergreifsaison (J.League 2026/27).
   const alle=seasons.concat(seasonCands(L.sy?0:1));
-  let best=null;
+  let best=null,roster=null,rosterSeason=null;
   for(let i=0;i<alle.length&&!res;i++){
     const title=L.wiki.replace("{S}",alle[i]);
     try{
       step("Wikipedia: "+esc(title));
       const w=await loadWiki(title);
+      if(!roster&&w.roster&&w.roster.length>=4){roster=w.roster;rosterSeason=alle[i];}
       let maxP=0;w.teams.forEach(t=>{if(t.pld>maxP)maxP=t.pld;});
+      if(!w.teams.length){errs.push(title+": noch keine Tabelle"+(w.roster?", aber "+w.roster.length+" Teilnehmer":""));continue;}
       const cand={season:alle[i],source:"Wikipedia · "+w.article,teams:w.teams,maxP,fit:w.fit};
       if(maxP>=3){res=cand;break;}
       if(!best||maxP>best.maxP)best=cand;
@@ -1169,6 +1260,18 @@ async function loadTable(L){
     }catch(e){errs.push(title+": "+String(e.message||e).slice(0,70));}
   }
   if(!res&&best)res=best;
+  // Werte aus der Vorsaison, Teilnehmerfeld aus der neuen Saison: Absteiger
+  // fliegen raus, Aufsteiger kommen als geschaetzte Platzhalter dazu.
+  if(res&&roster&&rosterSeason!==res.season){
+    const merged=matchRoster(roster,res.teams);
+    const neu=merged.filter(t=>t.neu);
+    if(merged.length-neu.length>=merged.length*0.5){
+      res.teams=merged;
+      res.roster={season:rosterSeason,neu:neu.map(t=>t.name),from:res.season};
+      // Die je Mannschaft gefitteten Staerken bleiben gueltig und wandern in
+      // matchRoster mit; nur die Aufsteiger haben keine.
+    }
+  }
   // Websuche nur noch als letzter Ausweg (z. B. wenn der direkte Abruf blockiert ist)
   if(!res){
     try{
@@ -1194,16 +1297,18 @@ async function loadTable(L){
     return null;
   }
 
-  const teams=res.teams.filter(t=>t&&t.name&&+t.pld>0&&isFinite(+t.gf)&&isFinite(+t.ga))
+  const teams=res.teams.filter(t=>t&&t.name&&(t.neu||(+t.pld>0&&isFinite(+t.gf)&&isFinite(+t.ga))))
     .map(t=>{
-      const o={name:String(t.name),pld:+t.pld,gf:+t.gf,ga:+t.ga};
+      const o={name:String(t.name),pld:+t.pld||0,gf:+t.gf||0,ga:+t.ga||0};
+      if(t.neu)o.neu=true;
       if(t.atk>0&&t.def>0){o.atk=+t.atk;o.def=+t.def;}
       return o;
     });
   if(teams.length<4){showStatus("err","Zu wenige gültige Tabellenzeilen gefunden. Bitte nochmal versuchen.");return null;}
   const totG=teams.reduce((s,t)=>s+t.gf,0), totP=teams.reduce((s,t)=>s+t.pld,0);
   const data={ts:Date.now(),de:L.de,en:L.en,season:res.season||seasons[0],
-    source:res.source||"",teams,avg:totP>0?totG/totP:1.4,str:L.str||1,fit:res.fit||null};
+    source:res.source||"",teams,avg:totP>0?totG/totP:1.4,str:L.str||1,
+    fit:res.fit||null,roster:res.roster||null};
   await cacheSet(L.id,data);
   await markCached();
   return data;
@@ -1217,6 +1322,9 @@ function applyLeagueData(data,note){
   return "<b>"+esc(data.de)+"</b>"+(data.season?" "+esc(data.season):"")
     +" — "+leagueTeams.length+" Teams · Ligaschnitt "+data.avg.toFixed(2)+" Tore/Team/Spiel"
     +(data.source?"<br>Quelle: "+esc(data.source):"")
+    +(data.roster?"<br>Teilnehmerfeld der Saison <b>"+esc(data.roster.season)+"</b>, Zahlen aus <b>"+esc(data.roster.from)+"</b> (dort ist erst gespielt worden)."
+       +(data.roster.neu.length?"<br><b style=\"color:var(--amber)\">Aufsteiger ohne Vorsaisonwerte: "+esc(data.roster.neu.join(", "))
+         +"</b> — grob geschätzt. Besser: die Zahlen aus der zweiten Liga holen und dort die Ligastärke setzen.":"<br>Alle Mannschaften haben Vorsaisonwerte."):"")
     +(data.fit?"<br>Stärken aus <b>"+data.fit.games+" Einzelspielen</b> geschätzt — die Stärke der bisherigen Gegner ist berücksichtigt."
        +"<br>Heimvorteil dieser Liga: <b>"+data.fit.adv.toFixed(2)+"</b> "
        +'<button type="button" class="btn sec mini" data-adv="'+data.fit.adv.toFixed(2)+'">übernehmen</button>':"")
@@ -1253,15 +1361,21 @@ function fillTeamSelect(){
   const s=$("selTeam");s.innerHTML="";
   leagueTeams.forEach((t,i)=>{
     const o=document.createElement("option");o.value=i;
-    o.textContent=t.name+"  ("+(t.gf/t.pld).toFixed(2)+" / "+(t.ga/t.pld).toFixed(2)+")";
+    o.textContent=t.pld>0
+      ? t.name+"  ("+(t.gf/t.pld).toFixed(2)+" / "+(t.ga/t.pld).toFixed(2)+")"
+      : t.name+"  (Aufsteiger — geschätzt)";
     s.appendChild(o);
   });
   s.selectedIndex=0;
 }
+// Aufsteiger schneiden im Schnitt schwaecher ab als der Ligadurchschnitt.
+const NEU_ATK=0.85, NEU_DEF=1.15;
 function setSlot(role){
   if(!leagueTeams.length)return;
   const t=leagueTeams[+$("selTeam").value];if(!t)return;
-  const gf=(t.gf/t.pld).toFixed(2),ga=(t.ga/t.pld).toFixed(2),av=leagueMeta.avg.toFixed(2);
+  const av=leagueMeta.avg.toFixed(2);
+  const gf=t.pld>0?(t.gf/t.pld).toFixed(2):(leagueMeta.avg*NEU_ATK).toFixed(2);
+  const ga=t.pld>0?(t.ga/t.pld).toFixed(2):(leagueMeta.avg*NEU_DEF).toFixed(2);
   const str=(leagueMeta.str||1).toFixed(2), pre=role==="home"?"home":"away";
   $(pre+"Name").value=t.name;$(pre+"For").value=gf;$(pre+"Ag").value=ga;
   $(pre+"Pld").value=t.pld;$(pre+"Avg").value=av;$(pre+"Str").value=str;
@@ -1270,7 +1384,8 @@ function setSlot(role){
   // Gefittete Staerken uebernehmen, wenn die Liga Einzelspiele geliefert hat
   $(pre+"FitA").value=t.atk>0?t.atk.toFixed(2):0;
   $(pre+"FitD").value=t.def>0?t.def.toFixed(2):0;
-  set(role==="home"?"slotH":"slotA",t.name+" — "+gf+" / "+ga+" · "+t.pld+" Sp. · "+leagueMeta.de
+  set(role==="home"?"slotH":"slotA",t.name+" — "+gf+" / "+ga+" · "
+    +(t.pld>0?t.pld+" Sp.":"Aufsteiger, geschätzt — bitte anpassen")+" · "+leagueMeta.de
     +(t.atk>0?" · gefittet "+t.atk.toFixed(2)+" / "+t.def.toFixed(2):""));
   recompute();
 }
