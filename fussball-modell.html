@@ -333,7 +333,7 @@
       </div>
       <div class="prow">
         <label for="shrinkK" title="Wie stark dünne Stichproben zum Ligaschnitt gezogen werden">Regression K</label>
-        <input type="range" id="shrinkK" min="0" max="15" step="1" value="5">
+        <input type="range" id="shrinkK" min="0" max="15" step="1" value="2">
         <span class="val" id="shrinkKV">5</span>
       </div>
       <div class="prow">
@@ -367,7 +367,7 @@
     </div>
     <div class="prow" style="margin-top:14px">
       <label for="blendW" title="Mischt die Modellwerte mit den margenbereinigten Quoten">Markt-Anteil</label>
-      <input type="range" id="blendW" min="0" max="1" step="0.05" value="0.30">
+      <input type="range" id="blendW" min="0" max="1" step="0.05" value="1">
       <span class="val" id="blendWV">30 %</span>
     </div>
     <div class="note left" id="blendNote" style="margin-bottom:0">–</div>
@@ -410,6 +410,7 @@
       <div class="oddscol"><span>Quote 2</span><input type="number" id="oA" min="1" step="0.01" placeholder="–"></div>
     </div>
     <div class="note" id="marginNote">Trage die drei Quoten ein, um die Buchmacher-Marge zu sehen.</div>
+    <div class="note left" style="margin-top:-8px"><b>Trag die beste Quote ein, die du wirklich bekommst</b> — nicht die des Buchmachers, bei dem du zufällig angemeldet bist. Im Rückwärtstest war das der wirksamste einzelne Hebel überhaupt: Bestquote statt Durchschnitt hob die Rendite um <b>5,5 Prozentpunkte</b> (−13,3 % auf −7,8 %), weil die eingebaute Marge dabei von 6,1 % auf 1,5 % fällt.</div>
     <div class="kellyctl">
       <div class="kfield"><span class="lb">Bankroll (€)</span><input type="number" id="bankroll" value="100" min="0" step="10"></div>
       <div class="kfield"><span class="lb">Kelly-Anteil</span>
@@ -470,14 +471,16 @@
     <div class="panel-h"><h2>10 · Journal &amp; Kalibrierung</h2><span class="hint">der ehrliche Test</span></div>
     <div class="jstats" id="jStats"></div>
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
-      <button class="btn sec mini" id="jAddBtn">Aktuelle Value-Wetten übernehmen</button>
+      <button class="btn sec mini" id="jAddBtn">Value-Wetten übernehmen</button>
+      <button class="btn sec mini" id="jAllBtn" title="Alle Märkte mit eingetragener Quote — ohne Einsatz, nur zum Messen">Alle Prognosen übernehmen (ohne Einsatz)</button>
       <button class="btn sec mini" id="jCsvBtn">Als CSV anzeigen</button>
       <button class="btn sec mini" id="jClearBtn">Journal leeren</button>
     </div>
     <div class="scroll-x"><table class="jt" id="jTable"></table></div>
-    <div class="note left" id="jCal" style="margin-top:14px">–</div>
+    <div class="note left" id="jTune" style="margin-top:14px">–</div>
+    <div class="note left" id="jCal">–</div>
     <textarea id="jCsv" style="display:none;width:100%;min-height:120px;font-family:var(--mono);font-size:11px;background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:9px;padding:10px;margin-top:10px"></textarea>
-    <div class="note left" style="margin-bottom:0">Ein Modell ist erst dann etwas wert, wenn es sich über viele Wetten bewährt. Das Journal hält Modellwahrscheinlichkeit, Quote und Ausgang fest und rechnet daraus Trefferquote, Brier-Score und Rendite. Unter etwa 100 Einträgen sagt keine dieser Zahlen viel — Zufall dominiert.</div>
+    <div class="note left" style="margin-bottom:0"><b>Das Journal verändert das Modell nicht von selbst.</b> Es misst nur. Die einzige Größe, die sich daraus seriös schätzen lässt, ist der Markt-Anteil — ein einziger Parameter, gesucht über den Brier-Score deiner eigenen Einträge. Vorgeschlagen wird er ab 30 gewerteten Einträgen, belastbar wird er ab einigen hundert, und übernommen wird er nur, wenn du darauf tippst. Alles Weitere — Dixon-Coles ρ, Regression, Ligastärke — automatisch nachzuziehen hieße, Rauschen für Signal zu halten.<br><br>Ein Modell ist erst dann etwas wert, wenn es sich über viele Wetten bewährt. Das Journal hält Modellwahrscheinlichkeit, Quote und Ausgang fest und rechnet daraus Trefferquote, Brier-Score und Rendite. Unter etwa 100 Einträgen sagt keine dieser Zahlen viel — Zufall dominiert.</div>
   </section>
 
   <footer class="disc">
@@ -488,6 +491,17 @@
     <p><b>Aktualität.</b> Jedes Antippen einer Liga lädt die Tabelle neu. Deutsche Ligen kommen von OpenLigaDB, alle anderen direkt aus dem englischen Wikipedia-Saisonartikel; hat die laufende Saison dort noch keine Tabelle, wird die Vorsaison genommen und im Kopf angezeigt. Geladene Tabellen werden zwar gespeichert, aber nur als Rückfall benutzt, wenn der Abruf scheitert — und dann sichtbar mit Altersangabe. Es wird nie stillschweigend mit alten Zahlen gerechnet.</p>
     <p><b>Grenzen.</b> Keine Aufstellungen, Verletzungen, Sperren, Motivation, Wetter, Reisebelastung. Kein echtes xG, nur erzielte Tore — xG sagt kommende Tore besser voraus als die tatsächlich gefallenen, ist aber frei und ohne Schlüssel nicht abrufbar. Auch keine Zeitgewichtung: die Ergebnismatrix verrät nicht, wann ein Spiel stattfand, deshalb zählt der Oktober so viel wie der März. Dafür gibt es die Form-Felder von Hand. Die Halbzeitwerte unterstellen einen festen Toranteil vor der Pause und ignorieren, dass Rückstände das Spiel öffnen. Automatisch geladene Zahlen können falsch oder veraltet sein; gleiche sie gegen die Quelle ab.</p>
     <p><b>Kelly.</b> f = (p·q − 1)/(q − 1) maximiert das Kapitalwachstum, <i>wenn</i> p stimmt. Stimmt p nicht, empfiehlt Kelly zu viel. Darum Viertel-Kelly voreingestellt und hart gedeckelt.</p>
+    <p><b>Der Rückwärtstest.</b> Das Modell wurde gegen 25.819 Partien aus 13 Wettbewerben und sechs Saisons geprüft (fünf Topligen, dazu zweite und dritte Ligen, 2020–2026). Jede Partie wurde ausschließlich aus Daten vorhergesagt, die vor dem Anpfiff bekannt waren. Ergebnis in drei Zeilen:</p>
+    <p style="padding-left:14px">· <b>Die Wahrscheinlichkeiten stimmen.</b> Wo das Modell 25 % sagte, traten 25,5 % ein; wo es 65 % sagte, 66 %. Über alle Bänder deckt sich Anspruch und Wirklichkeit.<br>
+    · <b>Der Buchmacher ist trotzdem besser.</b> Log-Loss 0,970 gegen 0,993. Der Abstand ist klein, aber in jeder geprüften Liga gleichgerichtet.<br>
+    · <b>Wetten nach den Value-Anzeigen hätte verloren</b> — je nach Schwelle 13 bis 23 % des Einsatzes, über 27.000 simulierte Wetten. Und je strenger die Value-Schwelle, desto schlechter das Ergebnis: Was nach besonders viel Value aussieht, ist meist besonders viel Modellfehler.</p>
+    <p><b>Was tatsächlich hilft.</b> Am selben Datensatz durchgerechnet, jeweils die Rendite über alle Wetten mit positivem Erwartungswert:</p>
+    <p style="padding-left:14px">· Durchschnittsquote, 1X2: <b>−13,3 %</b><br>
+    · <b>Bestquote</b> statt Durchschnitt: −7,8 % <span style="color:var(--muted)">(die Marge fällt von 6,1 % auf 1,5 %)</span><br>
+    · <b>Über/Unter</b> statt 1X2, zur Bestquote: <b>−4,2 %</b> — das beste Ergebnis von allem Getesteten<br>
+    · besseres Modell: <b>0</b>. Ein Stapeltest (Markt<sup>a</sup> · Modell<sup>b</sup>, auf alten Saisons gefittet, auf neuen geprüft) ergibt für das Modell das Gewicht <b>b = 0,00</b> — es enthält, gemessen, keine Information, die im Markt nicht schon steckt.</p>
+    <p>Auch keine Nische half: nach Ausgang, nach Liga und nach Quotenhöhe aufgeschlüsselt war jede Scheibe negativ. Die Rendite fällt dabei mit steigender Quote (−1,6 % unter Quote 1,8, −20,6 % ab Quote 6).</p>
+    <p>Aus diesen Messungen stammen die Voreinstellungen: Dixon-Coles ρ = −0,10, Regression K = 2, Zeitgewichtung mit 240 Tagen Halbwertszeit, Markt-Anteil 100 %. Der Test lässt sich mit <code>node tests/backtest.js</code> wiederholen.</p>
     <p><b>Vorbehalt.</b> Der Buchmacher hat 4–7 % Marge eingebaut; die muss ein Modell erst schlagen, bevor Value überhaupt beginnt. Ein Poisson-Modell — auch ein gut gebautes — schafft das nicht zuverlässig. Die Ausgabe ist ein Denkwerkzeug zur Einschätzung von Quoten, kein Tippgeber. Ohne bestandenen Test im Journal sollte kein Geld nach den Ausgaben gesetzt werden.</p>
     <p>Keine Anlage- oder Wettberatung. Wetten kann süchtig machen — Hilfe: www.bundesweit-gegen-gluecksspielsucht.de</p>
   </footer>
@@ -983,20 +997,23 @@ function fitStrengths(n,matches,iter){
   const atk=new Array(n).fill(1),def=new Array(n).fill(1);
   let adv=ADV_0;
   const gf=new Array(n).fill(0),ga=new Array(n).fill(0),cnt=new Array(n).fill(0);
-  let tot=0;
+  let tot=0,wsum=0;
+  // m.w = Gewicht der Partie (Zeitgewichtung); ohne Angabe zaehlt jede gleich
   matches.forEach(m=>{
-    gf[m.h]+=m.gh;ga[m.h]+=m.ga;gf[m.a]+=m.ga;ga[m.a]+=m.gh;
-    cnt[m.h]++;cnt[m.a]++;tot+=m.gh+m.ga;
+    const w=m.w>0?m.w:1;
+    gf[m.h]+=w*m.gh;ga[m.h]+=w*m.ga;gf[m.a]+=w*m.ga;ga[m.a]+=w*m.gh;
+    cnt[m.h]++;cnt[m.a]++;tot+=w*(m.gh+m.ga);wsum+=w;
   });
-  const base=tot/(2*matches.length);
+  const base=tot/(2*wsum);
   if(!(base>0))return null;
   for(let it=0;it<(iter||80);it++){
     // Angriff: erzielte Tore geteilt durch die Erwartung gegen die echten Gegner
     for(let i=0;i<n;i++){
       let e=0;
       matches.forEach(m=>{
-        if(m.h===i)e+=def[m.a]*base*adv;
-        else if(m.a===i)e+=def[m.h]*base/adv;
+        const w=m.w>0?m.w:1;
+        if(m.h===i)e+=w*def[m.a]*base*adv;
+        else if(m.a===i)e+=w*def[m.h]*base/adv;
       });
       if(e>0)atk[i]=clamp((gf[i]+PRIOR_M*base)/(e+PRIOR_M*base),0.1,4);
     }
@@ -1006,24 +1023,26 @@ function fitStrengths(n,matches,iter){
     for(let i=0;i<n;i++){
       let e=0;
       matches.forEach(m=>{
-        if(m.h===i)e+=atk[m.a]*base/adv;
-        else if(m.a===i)e+=atk[m.h]*base*adv;
+        const w=m.w>0?m.w:1;
+        if(m.h===i)e+=w*atk[m.a]*base/adv;
+        else if(m.a===i)e+=w*atk[m.h]*base*adv;
       });
       if(e>0)def[i]=clamp((ga[i]+PRIOR_M*base)/(e+PRIOR_M*base),0.1,4);
     }
     // Heimvorteil in geschlossener Form aus der Likelihood
     let H=0,A=0,SH=0,SA=0;
     matches.forEach(m=>{
-      H+=m.gh;A+=m.ga;
-      SH+=atk[m.h]*def[m.a]*base;
-      SA+=atk[m.a]*def[m.h]*base;
+      const w=m.w>0?m.w:1;
+      H+=w*m.gh;A+=w*m.ga;
+      SH+=w*atk[m.h]*def[m.a]*base;
+      SA+=w*atk[m.a]*def[m.h]*base;
     });
     if(SH>0){
       const disc=(A-H)*(A-H)+4*SH*SA;
       const raw=clamp((H-A+Math.sqrt(disc))/(2*SH),0.9,1.6);
       // Aus wenigen Partien laesst sich kein Heimvorteil ablesen — zum Erfahrungswert ziehen
-      const w=matches.length/(matches.length+ADV_M);
-      adv=w*raw+(1-w)*ADV_0;
+      const wa=wsum/(wsum+ADV_M);
+      adv=wa*raw+(1-wa)*ADV_0;
     }
   }
   return {atk,def,adv,base,games:matches.length,pld:cnt};
@@ -1116,16 +1135,49 @@ async function loadWiki(title){
 }
 
 // ============ OpenLigaDB (frei, ohne Schlüssel) ============
+// Einzelspiele statt Tabelle: liefert Datum je Partie und damit als einzige
+// Quelle eine echte Zeitgewichtung. Der Rückwärtstest über 25.819 Partien
+// zeigt eine Halbwertszeit von rund 240 Tagen als beste Einstellung.
+const HALBWERT_TAGE=240;
 async function loadOpenLiga(shortcut,year){
-  const r=await fetchTimeout("https://api.openligadb.de/getbltable/"+shortcut+"/"+year,
+  const r=await fetchTimeout("https://api.openligadb.de/getmatchdata/"+shortcut+"/"+year,
     {headers:{"Accept":"application/json"}},9000);
   if(!r.ok)throw new Error("OpenLigaDB "+r.status);
   const j=await r.json();
   if(!Array.isArray(j))throw new Error("OpenLigaDB: unerwartete Antwort");
-  const teams=j.filter(t=>t&&t.teamName&&+t.matches>0)
-    .map(t=>({name:t.teamName,pld:+t.matches,gf:+t.goals,ga:+t.opponentGoals}));
-  if(teams.length<4)throw new Error("OpenLigaDB: Saison noch ohne Spiele");
-  return teams;
+  const namen=[],ix={},roh=[];
+  let neuste=0;
+  j.forEach(m=>{
+    if(!m||!m.matchIsFinished||!m.team1||!m.team2)return;
+    const e=(m.matchResults||[]).filter(x=>x.resultTypeID===2)[0];
+    if(!e)return;
+    const ts=Date.parse(m.matchDateTimeUTC||m.matchDateTime);
+    [m.team1.teamName,m.team2.teamName].forEach(n=>{
+      if(ix[n]===undefined){ix[n]=namen.length;namen.push(n);}
+    });
+    if(ts>neuste)neuste=ts;
+    roh.push({h:ix[m.team1.teamName],a:ix[m.team2.teamName],
+      gh:+e.pointsTeam1,ga:+e.pointsTeam2,ts:ts});
+  });
+  if(namen.length<4||roh.length<namen.length)throw new Error("OpenLigaDB: Saison noch ohne Spiele");
+  // Tabelle aus den Einzelspielen aufbauen
+  const teams=namen.map(n=>({name:n,pld:0,gf:0,ga:0}));
+  roh.forEach(m=>{
+    teams[m.h].pld++;teams[m.h].gf+=m.gh;teams[m.h].ga+=m.ga;
+    teams[m.a].pld++;teams[m.a].gf+=m.ga;teams[m.a].ga+=m.gh;
+  });
+  // Zeitgewichtung: ältere Partien zählen weniger
+  const TAG=86400000;
+  roh.forEach(m=>{
+    m.w=isFinite(m.ts)&&neuste>0?Math.pow(0.5,(neuste-m.ts)/TAG/HALBWERT_TAGE):1;
+  });
+  const f=fitStrengths(namen.length,roh);
+  let fit=null;
+  if(f){
+    teams.forEach((t,i)=>{t.atk=f.atk[i];t.def=f.def[i];});
+    fit={games:roh.length,adv:f.adv,zeitgewichtet:true};
+  }
+  return {teams:teams.filter(t=>t.pld>0),fit};
 }
 
 // ============ Tabellen-Parser ============
@@ -1233,7 +1285,9 @@ async function loadTable(L){
     for(const yr of [y,y-1]){
       try{
         step("OpenLigaDB, Saison "+yr+"/"+String(yr+1).slice(2));
-        res={season:yr+"/"+String(yr+1).slice(2),source:"OpenLigaDB",teams:await loadOpenLiga(L.ol,yr)};
+        const ol=await loadOpenLiga(L.ol,yr);
+        res={season:yr+"/"+String(yr+1).slice(2),source:"OpenLigaDB (Einzelspiele)",
+             teams:ol.teams,fit:ol.fit};
         break;
       }catch(e){errs.push("OpenLigaDB "+yr+": "+String(e.message||e).slice(0,70));}
     }
@@ -1326,6 +1380,7 @@ function applyLeagueData(data,note){
        +(data.roster.neu.length?"<br><b style=\"color:var(--amber)\">Aufsteiger ohne Vorsaisonwerte: "+esc(data.roster.neu.join(", "))
          +"</b> — grob geschätzt. Besser: die Zahlen aus der zweiten Liga holen und dort die Ligastärke setzen.":"<br>Alle Mannschaften haben Vorsaisonwerte."):"")
     +(data.fit?"<br>Stärken aus <b>"+data.fit.games+" Einzelspielen</b> geschätzt — die Stärke der bisherigen Gegner ist berücksichtigt."
+       +(data.fit.zeitgewichtet?" Jüngere Partien zählen mehr (Halbwertszeit 240 Tage).":"")
        +"<br>Heimvorteil dieser Liga: <b>"+data.fit.adv.toFixed(2)+"</b> "
        +'<button type="button" class="btn sec mini" data-adv="'+data.fit.adv.toFixed(2)+'">übernehmen</button>':"")
     +(note?"<br>"+note:"")
@@ -1462,10 +1517,11 @@ function updRow(id,p,cfg,newName){
   }
   set(id+"_i",has?pct(impl)+dvNote:"–");
   const b=$(id+"_b"),k=$(id+"_k");
-  ROWS[id]={p,o:has?o:0,lbl};
+  ROWS[id]={p,p0:p,o:has?o:0,lbl};
   if(!has){b.className="badge bad";b.textContent="Quote?";row.classList.remove("good");k.style.display="none";return;}
   const ev=p*o-1,good=ev>0&&p>0&&p<1;
   ROWS[id].ev=ev;
+  if(impl!==null&&dvNote)ROWS[id].pm=impl;     // margenbereinigt, nur bei Gegenpaaren
   b.className="badge "+(good?"good":"bad");
   b.textContent=(good?"+":"")+(ev*100).toFixed(1)+"% EV";
   row.classList.toggle("good",good);
@@ -1586,7 +1642,10 @@ function recompute(){
   }
   $("blendNote").innerHTML=blended
     ? "Angezeigt: <b>"+Math.round((1-blendW)*100)+" % Modell + "+Math.round(blendW*100)+" % Markt</b>. Reines Modell: "
-      +pct(pmH)+" / "+pct(pmD)+" / "+pct(pmA)+". Der Marktanteil dämpft die ausgewiesenen Value-Chancen — bewusst so."
+      +pct(pmH)+" / "+pct(pmD)+" / "+pct(pmA)+"."
+      +(blendW>=0.999
+        ? "<br>Voreingestellt auf 100 %, weil der Rückwärtstest über <b>25.819 Partien</b> genau das ergeben hat: jede Mischung mit mehr Modell war messbar schlechter. Zieh den Regler nach links, um die eigene Sicht des Modells zu sehen — sinnvoll vor allem, wenn du die Werte oben von Hand angepasst hast."
+        : "<br>Der Rückwärtstest über 25.819 Partien sprach für 100 % Markt. Weniger heißt: du traust deiner eigenen Einschätzung mehr als der Messung.")
     : (mkt?"Markt-Anteil steht auf 0 % — angezeigt wird das reine Modell. Margenbereinigter Markt: "+pct(mkt[0])+" / "+pct(mkt[1])+" / "+pct(mkt[2])
         :"Ohne alle drei Quoten in Abschnitt 6 ist keine Mischung möglich — angezeigt wird das reine Modell.");
 
@@ -1630,11 +1689,13 @@ function recompute(){
   const bank=num("bankroll"),frac=parseFloat($("kellyFrac").value),cap=parseFloat($("kcap").value);
   const cfg={bank,frac,cap};
   const box=$("verdicts");box.innerHTML="";
-  const main=[{k:"1X2_H",l:"1 · "+hName,p:pH,o:oH},{k:"1X2_D",l:"X · Remis",p:pD,o:oD},{k:"1X2_A",l:"2 · "+aName,p:pA,o:oA}];
-  main.forEach(r=>{
+  const main=[{k:"1X2_H",l:"1 · "+hName,p:pH,p0:pmH,o:oH},{k:"1X2_D",l:"X · Remis",p:pD,p0:pmD,o:oD},
+              {k:"1X2_A",l:"2 · "+aName,p:pA,p0:pmA,o:oA}];
+  main.forEach((r,ri)=>{
     const has=r.o>1, ev=has?r.p*r.o-1:0, good=has&&ev>0;
-    ROWS[r.k]={p:r.p,o:has?r.o:0,lbl:r.l,ev};
+    ROWS[r.k]={p:r.p,p0:r.p0,pm:mkt?mkt[ri]:undefined,o:has?r.o:0,lbl:r.l,ev};
     let kh="";
+    const lang=good&&r.o>=6;
     if(good){
       const fU=kelly(r.p,r.o,frac,cap),full=(r.p*r.o-1)/(r.o-1)*frac;
       ROWS[r.k].stake=bank*fU;
@@ -1648,7 +1709,9 @@ function recompute(){
     el.innerHTML='<div class="toprow"><span class="lbl">'+esc(r.l)+'</span>'
       +'<span class="badge '+(good?"good":"bad")+'">'+(has?((good?"+":"")+(ev*100).toFixed(1)+"% EV"):"Quote?")+'</span></div>'
       +'<div class="mid">Modell <b>'+pct(r.p)+'</b> · Quote impliziert <b>'+(has?pct(1/r.o):"–")+'</b>'
-      +(mkt?' · margenbereinigt <b>'+pct(mkt[main.indexOf(r)])+'</b>':'')+'</div>'+kh;
+      +(mkt?' · margenbereinigt <b>'+pct(mkt[main.indexOf(r)])+'</b>':'')
+      +(lang?'<br><span style="color:var(--bad)">Hohe Quote: im Rückwärtstest verloren Wetten ab Quote 6 im Schnitt 20,6 % — dort irrt das Modell am stärksten.</span>':'')
+      +'</div>'+kh;
     box.appendChild(el);
   });
 
@@ -1701,20 +1764,25 @@ async function loadJournal(){
 async function saveJournal(){await store.set(JKEY,JSON.stringify(journal));renderJournal();}
 function dstr(ts){const d=new Date(ts);return String(d.getDate()).padStart(2,"0")+"."+String(d.getMonth()+1).padStart(2,"0")+"."+d.getFullYear();}
 
-$("jAddBtn").addEventListener("click",()=>{
+function addToJournal(nurValue){
   const match=(LAST?LAST.hName+" – "+LAST.aName:"Spiel");
-  const added=[];
+  let n=0;
   Object.keys(ROWS).forEach(k=>{
     const r=ROWS[k];
-    if(r&&r.o>1&&r.ev>0){
-      journal.push({id:Date.now()+"_"+k,ts:Date.now(),match,lbl:r.lbl,p:r.p,o:r.o,
-        stake:+(r.stake||0).toFixed(2),res:"open"});
-      added.push(r.lbl);
-    }
+    if(!r||!(r.o>1))return;
+    if(nurValue&&!(r.ev>0))return;
+    journal.push({id:Date.now()+"_"+k+"_"+n,ts:Date.now(),match,lbl:r.lbl,
+      p:r.p, p0:r.p0, pm:r.pm, o:r.o,
+      stake:nurValue?+(r.stake||0).toFixed(2):0, res:"open"});
+    n++;
   });
-  if(!added.length){alert("Keine Wette mit positivem Erwartungswert vorhanden. Erst Quoten eintragen.");return;}
+  if(!n){alert(nurValue
+    ?"Keine Wette mit positivem Erwartungswert vorhanden. Erst Quoten eintragen."
+    :"Keine Quote eingetragen. Trage mindestens eine Quote ein.");return;}
   saveJournal();
-});
+}
+$("jAddBtn").addEventListener("click",()=>addToJournal(true));
+$("jAllBtn").addEventListener("click",()=>addToJournal(false));
 $("jClearBtn").addEventListener("click",()=>{
   if(!journal.length)return;
   if(confirm("Alle "+journal.length+" Journal-Einträge löschen?")){journal=[];saveJournal();}
@@ -1722,8 +1790,9 @@ $("jClearBtn").addEventListener("click",()=>{
 $("jCsvBtn").addEventListener("click",()=>{
   const ta=$("jCsv");
   if(ta.style.display!=="none"){ta.style.display="none";return;}
-  ta.value="Datum;Spiel;Markt;Modell_p;Quote;Einsatz;Ergebnis\n"+journal.map(e=>
-    [dstr(e.ts),e.match,e.lbl,e.p.toFixed(4),e.o.toFixed(2),e.stake.toFixed(2),e.res].join(";")).join("\n");
+  ta.value="Datum;Spiel;Markt;Angezeigt_p;Modell_p;Markt_p;Quote;Einsatz;Ergebnis\n"+journal.map(e=>
+    [dstr(e.ts),e.match,e.lbl,e.p.toFixed(4),(e.p0!=null?e.p0.toFixed(4):""),
+     (e.pm!=null?e.pm.toFixed(4):""),e.o.toFixed(2),e.stake.toFixed(2),e.res].join(";")).join("\n");
   ta.style.display="block";
 });
 function setRes(id,res){
@@ -1767,6 +1836,40 @@ function renderJournal(){
     +(c[0]==="Bilanz"&&s.length?' style="color:'+(profit>=0?"var(--good)":"var(--bad)")+'"':'')
     +'>'+esc(c[1])+'</div></div>').join("");
 
+  // Die einzige Stellschraube, die sich aus dem Journal seriös schaetzen laesst:
+  // wie stark der Markt beigemischt gehoert. Ein Parameter, per Rasterssuche
+  // ueber den Brier-Score. Wird vorgeschlagen, nie automatisch gesetzt.
+  const kal=s.filter(e=>e.p0>0&&e.p0<1&&e.pm>0&&e.pm<1);
+  const box=$("jTune");
+  if(kal.length<30){
+    box.innerHTML="<b>Automatische Anpassung</b> — noch nicht genug Material: "+kal.length
+      +" von 30 nötigen Einträgen mit Modell- und Marktwert. Bis dahin wird nichts vorgeschlagen."
+      +"<br><span style=\"color:var(--faint)\">Am schnellsten wächst der Bestand über „Alle Prognosen übernehmen“ — ohne Einsatz, misst genauso.</span>";
+  }else{
+    const brier=w=>{
+      let sum=0;
+      kal.forEach(e=>{
+        const p=(1-w)*e.p0+w*e.pm, y=(e.res==="win")?1:0;
+        sum+=(p-y)*(p-y);
+      });
+      return sum/kal.length;
+    };
+    let bw=0,bb=brier(0);
+    for(let w=0;w<=1.0001;w+=0.05){const b=brier(w);if(b<bb-1e-12){bb=b;bw=w;}}
+    const b0=brier(0), b1=brier(1), jetzt=brier(parseFloat($("blendW").value));
+    const besser=(jetzt-bb)/jetzt*100;
+    box.innerHTML="<b>Automatische Anpassung</b> — geprüft an "+kal.length+" gewerteten Einträgen:"
+      +"<br>· reines Modell: Brier <b>"+b0.toFixed(4)+"</b> · reiner Markt: <b>"+b1.toFixed(4)+"</b>"
+      +"<br>· bester Markt-Anteil: <b>"+Math.round(bw*100)+" %</b> (Brier "+bb.toFixed(4)+")"
+      +(besser>0.5?' <button type="button" class="btn sec mini" data-blend="'+bw.toFixed(2)+'">übernehmen</button>':"")
+      +"<br><span style=\"color:var(--faint)\">"
+      +(kal.length<200
+        ? "Unter etwa 200 Einträgen ist dieser Wert selbst noch stark verrauscht — als Hinweis lesen, nicht als Wahrheit."
+        : "Der Wert wird langsam belastbar. Trotzdem gilt: er ist an deinen eigenen Prognosen gemessen, nicht an der Zukunft.")
+      +(b1<b0?" Dass der Markt allein besser abschneidet als das Modell allein, ist der Normalfall — kein Fehler.":"")
+      +"</span>";
+  }
+
   // Kalibrierung in Bändern
   if(s.length<5){
     $("jCal").innerHTML="Kalibrierung erscheint ab 5 gewerteten Wetten. Sie vergleicht, was das Modell versprochen hat, mit dem, was eingetreten ist — das ist der eigentliche Test. Ein Brier-Score unter 0,25 ist besser als Münzwurf; entscheidend ist aber die Rendite gegen die Quote.";
@@ -1785,6 +1888,14 @@ function renderJournal(){
   }
 }
 
+// Vorgeschlagenen Markt-Anteil uebernehmen
+$("jTune").addEventListener("click",e=>{
+  const w=e.target&&e.target.getAttribute&&e.target.getAttribute("data-blend");
+  if(!w)return;
+  $("blendW").value=w;recompute();
+  e.target.textContent="übernommen";
+});
+
 // ============ Sicherung ============
 $("exportBtn").addEventListener("click",async()=>{
   const out={v:1,ts:Date.now(),tables:{},journal};
@@ -1799,9 +1910,16 @@ $("importBtn").addEventListener("click",async()=>{
   if(!d||typeof d!=="object"){alert("Das ist kein gültiger Export-Text.");return;}
   let n=0;
   if(d.tables)for(const k of Object.keys(d.tables)){if(findLeague(k)){await cacheSet(k,d.tables[k]);n++;}}
-  if(Array.isArray(d.journal)){journal=d.journal;await saveJournal();}
+  let neu=0;
+  if(Array.isArray(d.journal)){
+    const ids={};journal.forEach(e=>{ids[e.id]=1;});
+    d.journal.forEach(e=>{if(e&&e.id&&!ids[e.id]){journal.push(e);ids[e.id]=1;neu++;}});
+    journal.sort((a,b)=>a.ts-b.ts);
+    await saveJournal();
+  }
   await markCached();
-  showStatus("ok","Sicherung eingelesen: <b>"+n+" Tabelle(n)</b> und "+(Array.isArray(d.journal)?d.journal.length:0)+" Journal-Einträge.");
+  showStatus("ok","Sicherung eingelesen: <b>"+n+" Tabelle(n)</b> und <b>"+neu+" neue</b> Journal-Einträge"
+    +(Array.isArray(d.journal)&&d.journal.length>neu?" ("+(d.journal.length-neu)+" waren schon vorhanden)":"")+".");
 });
 
 // Heimvorteil aus der geladenen Liga uebernehmen
