@@ -514,18 +514,18 @@
 // str = grobe Ligastärke (1,00 ≈ europäisches Mittelfeld), ol = OpenLigaDB-Kürzel
 const LEAGUES=[
  {g:"Europapokal",items:[
-  {id:"ucl",de:"Champions League",en:"UEFA Champions League league phase",wiki:"{S} UEFA Champions League league phase",sy:1,str:1.30},
-  {id:"uel",de:"Europa League",en:"UEFA Europa League league phase",wiki:"{S} UEFA Europa League league phase",sy:1,str:1.12},
-  {id:"uecl",de:"Conference League",en:"UEFA Conference League league phase",wiki:"{S} UEFA Conference League league phase",sy:1,str:1.00},
+  {id:"ucl",de:"Champions League",en:"UEFA Champions League league phase",wiki:"{S} UEFA Champions League league phase",sy:1,str:1.30,ep:1},
+  {id:"uel",de:"Europa League",en:"UEFA Europa League league phase",wiki:"{S} UEFA Europa League league phase",sy:1,str:1.12,ep:1},
+  {id:"uecl",de:"Conference League",en:"UEFA Conference League league phase",wiki:"{S} UEFA Conference League league phase",sy:1,str:1.00,ep:1},
  ]},
  {g:"Deutschsprachig",items:[
-  {id:"bl1",de:"Bundesliga",cc:"DE",en:"Bundesliga",wiki:"{S} Bundesliga",sy:1,str:1.24,ol:"bl1"},
-  {id:"bl2",de:"2. Bundesliga",cc:"DE",en:"2. Bundesliga",wiki:"{S} 2. Bundesliga",sy:1,str:1.04,ol:"bl2"},
-  {id:"bl3",de:"3. Liga",cc:"DE",en:"3. Liga",wiki:"{S} 3. Liga",sy:1,str:0.92,ol:"bl3"},
-  {id:"at1",de:"Bundesliga",cc:"AT",en:"Austrian Football Bundesliga",wiki:"{S} Austrian Football Bundesliga",sy:1,str:1.00},
-  {id:"at2",de:"2. Liga",cc:"AT",en:"Austrian Football Second League",wiki:"{S} Austrian Football Second League",sy:1,str:0.82},
-  {id:"ch1",de:"Super League",cc:"CH",en:"Swiss Super League",wiki:"{S} Swiss Super League",sy:1,str:0.98},
-  {id:"ch2",de:"Challenge League",cc:"CH",en:"Swiss Challenge League",wiki:"{S} Swiss Challenge League",sy:1,str:0.80},
+  {id:"bl1",de:"Bundesliga",cc:"DE",en:"Bundesliga",wiki:"{S} Bundesliga",sy:1,str:1.15,ol:"bl1"},
+  {id:"bl2",de:"2. Bundesliga",cc:"DE",en:"2. Bundesliga",wiki:"{S} 2. Bundesliga",sy:1,str:0.96,ol:"bl2"},
+  {id:"bl3",de:"3. Liga",cc:"DE",en:"3. Liga",wiki:"{S} 3. Liga",sy:1,str:0.85,ol:"bl3"},
+  {id:"at1",de:"Bundesliga",cc:"AT",en:"Austrian Football Bundesliga",wiki:"{S} Austrian Football Bundesliga",sy:1,str:0.88},
+  {id:"at2",de:"2. Liga",cc:"AT",en:"Austrian Football Second League",wiki:"{S} Austrian Football Second League",sy:1,str:0.72},
+  {id:"ch1",de:"Super League",cc:"CH",en:"Swiss Super League",wiki:"{S} Swiss Super League",sy:1,str:0.93},
+  {id:"ch2",de:"Challenge League",cc:"CH",en:"Swiss Challenge League",wiki:"{S} Swiss Challenge League",sy:1,str:0.76},
  ]},
  {g:"England",items:[
   {id:"epl",de:"Premier League",cc:"EN",en:"Premier League",wiki:"{S} Premier League",sy:1,str:1.30},
@@ -535,74 +535,77 @@ const LEAGUES=[
   {id:"ent",de:"National League",cc:"EN",en:"National League (division)",wiki:"{S} National League (division)",sy:1,str:0.74},
  ]},
  {g:"Spanien &amp; Portugal",items:[
-  {id:"esp",de:"La Liga",cc:"ES",en:"La Liga",wiki:"{S} La Liga",sy:1,str:1.26},
-  {id:"esp2",de:"Segunda División",cc:"ES",en:"Segunda División",wiki:"{S} Segunda División",sy:1,str:1.00},
+  {id:"esp",de:"La Liga",cc:"ES",en:"La Liga",wiki:"{S} La Liga",sy:1,str:1.18},
+  {id:"esp2",de:"Segunda División",cc:"ES",en:"Segunda División",wiki:"{S} Segunda División",sy:1,str:0.94},
   {id:"por",de:"Primeira Liga",cc:"PT",en:"Primeira Liga",wiki:"{S} Primeira Liga",sy:1,str:1.10},
   {id:"por2",de:"Liga Portugal 2",cc:"PT",en:"Liga Portugal 2",wiki:"{S} Liga Portugal 2",sy:1,str:0.86},
  ]},
  {g:"Italien &amp; Frankreich",items:[
-  {id:"ita",de:"Serie A",cc:"IT",en:"Serie A",wiki:"{S} Serie A",sy:1,str:1.24},
-  {id:"ita2",de:"Serie B",cc:"IT",en:"Serie B",wiki:"{S} Serie B",sy:1,str:1.00},
-  {id:"fra",de:"Ligue 1",cc:"FR",en:"Ligue 1",wiki:"{S} Ligue 1",sy:1,str:1.16},
-  {id:"fra2",de:"Ligue 2",cc:"FR",en:"Ligue 2",wiki:"{S} Ligue 2",sy:1,str:0.97},
-  {id:"fra3",de:"National",cc:"FR",en:"Championnat National",wiki:"{S} Championnat National",sy:1,str:0.84},
+  {id:"ita",de:"Serie A",cc:"IT",en:"Serie A",wiki:"{S} Serie A",sy:1,str:1.22},
+  {id:"ita2",de:"Serie B",cc:"IT",en:"Serie B",wiki:"{S} Serie B",sy:1,str:0.98},
+  {id:"fra",de:"Ligue 1",cc:"FR",en:"Ligue 1",wiki:"{S} Ligue 1",sy:1,str:1.12},
+  {id:"fra2",de:"Ligue 2",cc:"FR",en:"Ligue 2",wiki:"{S} Ligue 2",sy:1,str:0.94},
+  {id:"fra3",de:"National",cc:"FR",en:"Championnat National",wiki:"{S} Championnat National",sy:1,str:0.81},
  ]},
  {g:"West- &amp; Nordeuropa",items:[
-  {id:"ned",de:"Eredivisie",cc:"NL",en:"Eredivisie",wiki:"{S} Eredivisie",sy:1,str:1.10},
-  {id:"ned2",de:"Eerste Divisie",cc:"NL",en:"Eerste Divisie",wiki:"{S} Eerste Divisie",sy:1,str:0.88},
-  {id:"bel",de:"Pro League",cc:"BE",en:"Belgian Pro League",wiki:"{S} Belgian Pro League",sy:1,str:1.05},
-  {id:"bel2",de:"Challenger Pro League",cc:"BE",en:"Challenger Pro League",wiki:"{S} Challenger Pro League",sy:1,str:0.84},
-  {id:"sco",de:"Premiership",cc:"SC",en:"Scottish Premiership",wiki:"{S} Scottish Premiership",sy:1,str:0.96},
-  {id:"sco2",de:"Championship",cc:"SC",en:"Scottish Championship",wiki:"{S} Scottish Championship",sy:1,str:0.80},
-  {id:"irl",de:"Premier Division",cc:"IE",en:"League of Ireland Premier Division",wiki:"{S} League of Ireland Premier Division",sy:0,str:0.86},
-  {id:"nir",de:"NIFL Premiership",cc:"NI",en:"NIFL Premiership",wiki:"{S} NIFL Premiership",sy:1,str:0.78},
-  {id:"wal",de:"Cymru Premier",cc:"WA",en:"Cymru Premier",wiki:"{S} Cymru Premier",sy:1,str:0.72},
-  {id:"den",de:"Superliga",cc:"DK",en:"Danish Superliga",wiki:"{S} Danish Superliga",sy:1,str:0.98},
-  {id:"den2",de:"1. Division",cc:"DK",en:"Danish 1st Division",wiki:"{S} Danish 1st Division",sy:1,str:0.80},
-  {id:"nor",de:"Eliteserien",cc:"NO",en:"Eliteserien",wiki:"{S} Eliteserien",sy:0,str:0.94},
-  {id:"nor2",de:"OBOS-ligaen",cc:"NO",en:"Norwegian First Division",wiki:"{S} Norwegian First Division",sy:0,str:0.78},
-  {id:"swe",de:"Allsvenskan",cc:"SE",en:"Allsvenskan",wiki:"{S} Allsvenskan",sy:0,str:0.94},
-  {id:"swe2",de:"Superettan",cc:"SE",en:"Superettan",wiki:"{S} Superettan",sy:0,str:0.78},
-  {id:"fin",de:"Veikkausliiga",cc:"FI",en:"Veikkausliiga",wiki:"{S} Veikkausliiga",sy:0,str:0.88},
-  {id:"isl",de:"Besta deild",cc:"IS",en:"Besta deild karla",wiki:"{S} Besta deild karla",sy:0,str:0.84},
-  {id:"fro",de:"Betri deildin",cc:"FO",en:"Faroe Islands Premier League",wiki:"{S} Faroe Islands Premier League",sy:0,str:0.68},
-  {id:"lux",de:"National Division",cc:"LU",en:"Luxembourg National Division",wiki:"{S} Luxembourg National Division",sy:1,str:0.72},
+  {id:"ned",de:"Eredivisie",cc:"NL",en:"Eredivisie",wiki:"{S} Eredivisie",sy:1,str:1.06},
+  {id:"ned2",de:"Eerste Divisie",cc:"NL",en:"Eerste Divisie",wiki:"{S} Eerste Divisie",sy:1,str:0.85},
+  {id:"bel",de:"Pro League",cc:"BE",en:"Belgian Pro League",wiki:"{S} Belgian Pro League",sy:1,str:1.08},
+  {id:"bel2",de:"Challenger Pro League",cc:"BE",en:"Challenger Pro League",wiki:"{S} Challenger Pro League",sy:1,str:0.86},
+  {id:"sco",de:"Premiership",cc:"SC",en:"Scottish Premiership",wiki:"{S} Scottish Premiership",sy:1,str:0.89},
+  {id:"sco2",de:"Championship",cc:"SC",en:"Scottish Championship",wiki:"{S} Scottish Championship",sy:1,str:0.74},
+  {id:"irl",de:"Premier Division",cc:"IE",en:"League of Ireland Premier Division",wiki:"{S} League of Ireland Premier Division",sy:0,str:0.75},
+  {id:"nir",de:"NIFL Premiership",cc:"NI",en:"NIFL Premiership",wiki:"{S} NIFL Premiership",sy:1,str:0.59},
+  {id:"wal",de:"Cymru Premier",cc:"WA",en:"Cymru Premier",wiki:"{S} Cymru Premier",sy:1,str:0.56},
+  {id:"den",de:"Superliga",cc:"DK",en:"Danish Superliga",wiki:"{S} Danish Superliga",sy:1,str:0.97},
+  {id:"den2",de:"1. Division",cc:"DK",en:"Danish 1st Division",wiki:"{S} Danish 1st Division",sy:1,str:0.79},
+  {id:"nor",de:"Eliteserien",cc:"NO",en:"Eliteserien",wiki:"{S} Eliteserien",sy:0,str:0.96},
+  {id:"nor2",de:"OBOS-ligaen",cc:"NO",en:"Norwegian First Division",wiki:"{S} Norwegian First Division",sy:0,str:0.80},
+  {id:"swe",de:"Allsvenskan",cc:"SE",en:"Allsvenskan",wiki:"{S} Allsvenskan",sy:0,str:0.90},
+  {id:"swe2",de:"Superettan",cc:"SE",en:"Superettan",wiki:"{S} Superettan",sy:0,str:0.75},
+  {id:"fin",de:"Veikkausliiga",cc:"FI",en:"Veikkausliiga",wiki:"{S} Veikkausliiga",sy:0,str:0.70},
+  {id:"isl",de:"Besta deild",cc:"IS",en:"Besta deild karla",wiki:"{S} Besta deild karla",sy:0,str:0.76},
+  {id:"fro",de:"Betri deildin",cc:"FO",en:"Faroe Islands Premier League",wiki:"{S} Faroe Islands Premier League",sy:0,str:0.66},
+  {id:"lux",de:"National Division",cc:"LU",en:"Luxembourg National Division",wiki:"{S} Luxembourg National Division",sy:1,str:0.57},
  ]},
  {g:"Ost- &amp; Südosteuropa",items:[
-  {id:"cze",de:"Fortuna Liga",cc:"CZ",en:"Czech First League",wiki:"{S} Czech First League",sy:1,str:0.97},
-  {id:"cze2",de:"FNL",cc:"CZ",en:"Czech National Football League",wiki:"{S} Czech National Football League",sy:1,str:0.80},
-  {id:"pol",de:"Ekstraklasa",cc:"PL",en:"Ekstraklasa",wiki:"{S} Ekstraklasa",sy:1,str:0.94},
-  {id:"pol2",de:"I liga",cc:"PL",en:"I liga",wiki:"{S} I liga",sy:1,str:0.80},
-  {id:"svk",de:"Niké liga",cc:"SK",en:"Slovak First Football League",wiki:"{S} Slovak First Football League",sy:1,str:0.86},
-  {id:"hun",de:"NB I",cc:"HU",en:"Nemzeti Bajnokság I",wiki:"{S} Nemzeti Bajnokság I",sy:1,str:0.88},
-  {id:"rou",de:"Liga I",cc:"RO",en:"Liga I",wiki:"{S} Liga I",sy:1,str:0.90},
-  {id:"bul",de:"Parva Liga",cc:"BG",en:"First Professional Football League (Bulgaria)",wiki:"{S} First Professional Football League (Bulgaria)",sy:1,str:0.84},
-  {id:"srb",de:"SuperLiga",cc:"RS",en:"Serbian SuperLiga",wiki:"{S} Serbian SuperLiga",sy:1,str:0.92},
-  {id:"cro",de:"HNL",cc:"HR",en:"Croatian Football League",wiki:"{S} Croatian Football League",sy:1,str:0.95},
-  {id:"svn",de:"PrvaLiga",cc:"SI",en:"Slovenian PrvaLiga",wiki:"{S} Slovenian PrvaLiga",sy:1,str:0.88},
-  {id:"bih",de:"Premijer liga",cc:"BA",en:"Premier League of Bosnia and Herzegovina",wiki:"{S} Premier League of Bosnia and Herzegovina",sy:1,str:0.84},
-  {id:"mkd",de:"Prva Liga",cc:"MK",en:"Macedonian First Football League",wiki:"{S} Macedonian First Football League",sy:1,str:0.78},
-  {id:"alb",de:"Kategoria Superiore",cc:"AL",en:"Kategoria Superiore",wiki:"{S} Kategoria Superiore",sy:1,str:0.80},
-  {id:"kos",de:"Superliga",cc:"XK",en:"Football Superleague of Kosovo",wiki:"{S} Football Superleague of Kosovo",sy:1,str:0.76},
-  {id:"mne",de:"Prva CFL",cc:"ME",en:"Montenegrin First League",wiki:"{S} Montenegrin First League",sy:1,str:0.76},
-  {id:"gre",de:"Super League",cc:"GR",en:"Super League Greece",wiki:"{S} Super League Greece",sy:1,str:1.00},
-  {id:"gre2",de:"Super League 2",cc:"GR",en:"Super League Greece 2",wiki:"{S} Super League Greece 2",sy:1,str:0.78},
-  {id:"tur",de:"Süper Lig",cc:"TR",en:"Süper Lig",wiki:"{S} Süper Lig",sy:1,str:1.05},
-  {id:"tur2",de:"1. Lig",cc:"TR",en:"TFF First League",wiki:"{S} TFF First League",sy:1,str:0.84},
-  {id:"ukr",de:"Premier Liha",cc:"UA",en:"Ukrainian Premier League",wiki:"{S} Ukrainian Premier League",sy:1,str:0.97},
-  {id:"rus",de:"Premjer-Liga",cc:"RU",en:"Russian Premier League",wiki:"{S} Russian Premier League",sy:1,str:1.05},
-  {id:"blr",de:"Wysschaja Liga",cc:"BY",en:"Belarusian Premier League",wiki:"{S} Belarusian Premier League",sy:0,str:0.82},
-  {id:"mda",de:"Super Liga",cc:"MD",en:"Moldovan Super Liga",wiki:"{S} Moldovan Super Liga",sy:1,str:0.76},
-  {id:"geo",de:"Erovnuli Liga",cc:"GE",en:"Erovnuli Liga",wiki:"{S} Erovnuli Liga",sy:0,str:0.80},
-  {id:"arm",de:"Premier League",cc:"AM",en:"Armenian Premier League",wiki:"{S} Armenian Premier League",sy:1,str:0.78},
-  {id:"aze",de:"Premyer Liqası",cc:"AZ",en:"Azerbaijan Premier League",wiki:"{S} Azerbaijan Premier League",sy:1,str:0.86},
-  {id:"kaz",de:"Premier League",cc:"KZ",en:"Kazakhstan Premier League",wiki:"{S} Kazakhstan Premier League",sy:0,str:0.84},
-  {id:"lva",de:"Virsliga",cc:"LV",en:"Latvian Higher League",wiki:"{S} Latvian Higher League",sy:0,str:0.76},
-  {id:"ltu",de:"A lyga",cc:"LT",en:"A Lyga",wiki:"{S} A Lyga",sy:0,str:0.76},
-  {id:"est",de:"Meistriliiga",cc:"EE",en:"Meistriliiga",wiki:"{S} Meistriliiga",sy:0,str:0.74},
-  {id:"cyp",de:"First Division",cc:"CY",en:"Cypriot First Division",wiki:"{S} Cypriot First Division",sy:1,str:0.92},
-  {id:"isr",de:"Ligat ha'Al",cc:"IL",en:"Israeli Premier League",wiki:"{S} Israeli Premier League",sy:1,str:0.92},
-  {id:"mlt",de:"Premier League",cc:"MT",en:"Maltese Premier League",wiki:"{S} Maltese Premier League",sy:1,str:0.72},
+  {id:"cze",de:"Fortuna Liga",cc:"CZ",en:"Czech First League",wiki:"{S} Czech First League",sy:1,str:1.02},
+  {id:"cze2",de:"FNL",cc:"CZ",en:"Czech National Football League",wiki:"{S} Czech National Football League",sy:1,str:0.84},
+  {id:"pol",de:"Ekstraklasa",cc:"PL",en:"Ekstraklasa",wiki:"{S} Ekstraklasa",sy:1,str:1.00},
+  {id:"pol2",de:"I liga",cc:"PL",en:"I liga",wiki:"{S} I liga",sy:1,str:0.85},
+  {id:"svk",de:"Niké liga",cc:"SK",en:"Slovak First Football League",wiki:"{S} Slovak First Football League",sy:1,str:0.80},
+  {id:"hun",de:"NB I",cc:"HU",en:"Nemzeti Bajnokság I",wiki:"{S} Nemzeti Bajnokság I",sy:1,str:0.92},
+  {id:"rou",de:"Liga I",cc:"RO",en:"Liga I",wiki:"{S} Liga I",sy:1,str:0.87},
+  {id:"bul",de:"Parva Liga",cc:"BG",en:"First Professional Football League (Bulgaria)",wiki:"{S} First Professional Football League (Bulgaria)",sy:1,str:0.79},
+  {id:"srb",de:"SuperLiga",cc:"RS",en:"Serbian SuperLiga",wiki:"{S} Serbian SuperLiga",sy:1,str:0.77},
+  {id:"cro",de:"HNL",cc:"HR",en:"Croatian Football League",wiki:"{S} Croatian Football League",sy:1,str:0.85},
+  {id:"svn",de:"PrvaLiga",cc:"SI",en:"Slovenian PrvaLiga",wiki:"{S} Slovenian PrvaLiga",sy:1,str:0.83},
+  {id:"bih",de:"Premijer liga",cc:"BA",en:"Premier League of Bosnia and Herzegovina",wiki:"{S} Premier League of Bosnia and Herzegovina",sy:1,str:0.72},
+  {id:"mkd",de:"Prva Liga",cc:"MK",en:"Macedonian First Football League",wiki:"{S} Macedonian First Football League",sy:1,str:0.66},
+  {id:"alb",de:"Kategoria Superiore",cc:"AL",en:"Kategoria Superiore",wiki:"{S} Kategoria Superiore",sy:1,str:0.65},
+  {id:"kos",de:"Superliga",cc:"XK",en:"Football Superleague of Kosovo",wiki:"{S} Football Superleague of Kosovo",sy:1,str:0.73},
+  {id:"mne",de:"Prva CFL",cc:"ME",en:"Montenegrin First League",wiki:"{S} Montenegrin First League",sy:1,str:0.57},
+  {id:"gre",de:"Super League",cc:"GR",en:"Super League Greece",wiki:"{S} Super League Greece",sy:1,str:0.99},
+  {id:"gre2",de:"Super League 2",cc:"GR",en:"Super League Greece 2",wiki:"{S} Super League Greece 2",sy:1,str:0.77},
+  {id:"tur",de:"Süper Lig",cc:"TR",en:"Süper Lig",wiki:"{S} Süper Lig",sy:1,str:1.04},
+  {id:"tur2",de:"1. Lig",cc:"TR",en:"TFF First League",wiki:"{S} TFF First League",sy:1,str:0.83},
+  {id:"ukr",de:"Premier Liha",cc:"UA",en:"Ukrainian Premier League",wiki:"{S} Ukrainian Premier League",sy:1,str:0.84},
+  {id:"rus",de:"Premjer-Liga",cc:"RU",en:"Russian Premier League",wiki:"{S} Russian Premier League",sy:1,str:1.00},
+  {id:"blr",de:"Wysschaja Liga",cc:"BY",en:"Belarusian Premier League",wiki:"{S} Belarusian Premier League",sy:0,str:0.64},
+  {id:"mda",de:"Super Liga",cc:"MD",en:"Moldovan Super Liga",wiki:"{S} Moldovan Super Liga",sy:1,str:0.67},
+  {id:"geo",de:"Erovnuli Liga",cc:"GE",en:"Erovnuli Liga",wiki:"{S} Erovnuli Liga",sy:0,str:0.58},
+  {id:"arm",de:"Premier League",cc:"AM",en:"Armenian Premier League",wiki:"{S} Armenian Premier League",sy:1,str:0.74},
+  {id:"aze",de:"Premyer Liqası",cc:"AZ",en:"Azerbaijan Premier League",wiki:"{S} Azerbaijan Premier League",sy:1,str:0.81},
+  {id:"kaz",de:"Premier League",cc:"KZ",en:"Kazakhstan Premier League",wiki:"{S} Kazakhstan Premier League",sy:0,str:0.69},
+  {id:"lva",de:"Virsliga",cc:"LV",en:"Latvian Higher League",wiki:"{S} Latvian Higher League",sy:0,str:0.71},
+  {id:"ltu",de:"A lyga",cc:"LT",en:"A Lyga",wiki:"{S} A Lyga",sy:0,str:0.63},
+  {id:"est",de:"Meistriliiga",cc:"EE",en:"Meistriliiga",wiki:"{S} Meistriliiga",sy:0,str:0.61},
+  {id:"cyp",de:"First Division",cc:"CY",en:"Cypriot First Division",wiki:"{S} Cypriot First Division",sy:1,str:0.94},
+  {id:"isr",de:"Ligat ha'Al",cc:"IL",en:"Israeli Premier League",wiki:"{S} Israeli Premier League",sy:1,str:0.82},
+  {id:"mlt",de:"Premier League",cc:"MT",en:"Maltese Premier League",wiki:"{S} Maltese Premier League",sy:1,str:0.62},
+  {id:"and",de:"Primera Divisió",cc:"AD",en:"Primera Divisió",wiki:"{S} Primera Divisió",sy:1,str:0.61},
+  {id:"smr",de:"Campionato",cc:"SM",en:"Campionato Sammarinese di Calcio",wiki:"{S} Campionato Sammarinese di Calcio",sy:1,str:0.55},
+  {id:"gib",de:"Gibraltar League",cc:"GI",en:"Gibraltar Football League",wiki:"{S} Gibraltar Football League",sy:1,str:0.60},
  ]},
  {g:"Amerika",items:[
   {id:"mls",de:"MLS",cc:"US",en:"Major League Soccer season",wiki:"{S} Major League Soccer season",sy:0,str:0.95},
@@ -1344,11 +1347,17 @@ async function loadTable(L){
   btn.disabled=false;btn.classList.remove("loading");
 
   if(!res){
-    showStatus("err","<b>Tabelle konnte nicht geladen werden.</b>"
-      +'<br>'+errs.map(x=>"· "+esc(x)).join("<br>")
-      +'<br><br>Nochmal antippen hilft manchmal. Sicher funktioniert immer: die Tabelle unten selbst einfügen.');
-    $("pasteBox").style.display="block";
-    $("pasteToggle").textContent="▾ Tabelle stattdessen selbst einfügen (ohne Abruf)";
+    // Bei Europapokalen ist das der Normalfall vor der Ligaphase — dann zählt
+    // die Anleitung mehr als die Fehlermeldung.
+    showStatus(L.ep?"info":"err",
+      (L.ep?EP_ANLEITUNG+"<b>Für "+esc(L.de)+" gibt es derzeit keine Tabelle</b> — die Ligaphase hat noch nicht begonnen."
+           :"<b>Tabelle konnte nicht geladen werden.</b>")
+      +'<br><span style="color:var(--faint)">'+errs.map(x=>"· "+esc(x)).join("<br>")+'</span>'
+      +(L.ep?"":'<br><br>Nochmal antippen hilft manchmal. Sicher funktioniert immer: die Tabelle unten selbst einfügen.'));
+    if(!L.ep){
+      $("pasteBox").style.display="block";
+      $("pasteToggle").textContent="▾ Tabelle stattdessen selbst einfügen (ohne Abruf)";
+    }
     return null;
   }
 
@@ -1369,12 +1378,23 @@ async function loadTable(L){
   return data;
 }
 
+// Qualifikations- und K.-o.-Runden haben keine Tabelle. Der Weg führt über die
+// Heimatligen beider Mannschaften; den Ligaunterschied rechnet die Ligastärke.
+const EP_ANLEITUNG='<div style="border-left:3px solid var(--amber);padding:2px 0 2px 10px;margin:6px 0">'
+ +'<b>Qualifikation und K.-o.-Runde haben keine Tabelle.</b> So rechnest du sie trotzdem:'
+ +'<br>1. Heimmannschaft in <b>ihrer Heimatliga</b> antippen und als Heimteam setzen.'
+ +'<br>2. Danach die Liga der Auswärtsmannschaft antippen und diese als Auswärtsteam setzen.'
+ +'<br>3. Die <b>Ligastärke</b> beider Länder wird automatisch mitgesetzt und rechnet den Unterschied heraus.'
+ +'<br>4. Für das Weiterkommen über zwei Spiele: Abschnitt 9, Modus „Rückspiel“.'
+ +'<br><span style="color:var(--faint)">Der zuerst gesetzte Platz bleibt beim Ligawechsel erhalten. '
+ +'Spielt ein Klub regelmäßig international (Ludogorets, Slovan, Malmö), setz seine Ligastärke von Hand etwas höher als die seiner Liga.</span></div>';
 function applyLeagueData(data,note){
   if(!(data.str>0))data.str=(activeLeague&&activeLeague.str)||1;   // aeltere Speicherstaende
   leagueTeams=data.teams;leagueMeta=data;
   fillTeamSelect();
   $("selBox").classList.add("show");
-  return "<b>"+esc(data.de)+"</b>"+(data.season?" "+esc(data.season):"")
+  return (activeLeague&&activeLeague.ep?EP_ANLEITUNG:"")
+    +"<b>"+esc(data.de)+"</b>"+(data.season?" "+esc(data.season):"")
     +" — "+leagueTeams.length+" Teams · Ligaschnitt "+data.avg.toFixed(2)+" Tore/Team/Spiel"
     +(data.source?"<br>Quelle: "+esc(data.source):"")
     +(data.roster?"<br>Teilnehmerfeld der Saison <b>"+esc(data.roster.season)+"</b>, Zahlen aus <b>"+esc(data.roster.from)+"</b> (dort ist erst gespielt worden)."
@@ -1441,7 +1461,8 @@ function setSlot(role){
   $(pre+"FitA").value=t.atk>0?t.atk.toFixed(2):0;
   $(pre+"FitD").value=t.def>0?t.def.toFixed(2):0;
   set(role==="home"?"slotH":"slotA",t.name+" — "+gf+" / "+ga+" · "
-    +(t.pld>0?t.pld+" Sp.":"Aufsteiger, geschätzt — bitte anpassen")+" · "+leagueMeta.de
+    +(t.pld>0?t.pld+" Sp.":"Aufsteiger, geschätzt — bitte anpassen")
+    +" · "+leagueMeta.de+" (Stärke "+str+")"
     +(t.atk>0?" · gefittet "+t.atk.toFixed(2)+" / "+t.def.toFixed(2):""));
   recompute();
 }
