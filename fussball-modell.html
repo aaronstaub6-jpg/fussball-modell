@@ -101,6 +101,14 @@
   .finegrp{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);margin:10px 0 6px}
   .row.sm input[type=number]{width:62px;font-size:13px;padding:5px 7px}
   .row.sm label{font-size:11.5px}
+  .row.sm input[type=checkbox]{width:22px;height:22px;accent-color:var(--amber);margin-right:20px}
+  .spieler{display:flex;flex-wrap:wrap;gap:6px;margin:2px 0 8px}
+  .spieler .leer{color:var(--faint);font-size:11.5px;line-height:1.5}
+  .pbtn{font:inherit;font-size:12.5px;padding:7px 10px;border-radius:999px;cursor:pointer;
+        border:1px solid var(--line);background:var(--bg);color:var(--ink)}
+  .pbtn .g{color:var(--faint);font-family:var(--mono);font-size:10.5px;margin-left:6px}
+  .pbtn.on{background:rgba(214,86,72,.16);border-color:var(--bad);color:var(--bad);text-decoration:line-through}
+  .pbtn.on .g{color:var(--bad);text-decoration:none}
 
   .params{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
   @media(max-width:520px){.params{grid-template-columns:1fr}}
@@ -294,6 +302,23 @@
           <div class="row sm"><label for="homeFmFor">Tore</label><input type="number" id="homeFmFor" value="0" min="0" step="1"></div>
           <div class="row sm"><label for="homeFmAg">Gegentore</label><input type="number" id="homeFmAg" value="0" min="0" step="1"></div>
         </details>
+        <details class="fine">
+          <summary>Kader &amp; Aufstellung: Heim</summary>
+          <div class="finegrp">Kaderwert (Mio €, 0 = aus)</div>
+          <div class="row sm"><label for="homeWert" title="Marktwert des Kaders, z. B. von transfermarkt.de. Zählt nur im Vergleich zum Gegner und verliert mit jedem gespielten Spiel an Gewicht.">Kaderwert</label><input type="number" id="homeWert" value="0" min="0" step="1"></div>
+          <div class="finegrp">Wer fehlt? — Torschützen automatisch geholt</div>
+          <div class="spieler" id="homeSpieler"><span class="leer">Erst eine Mannschaft setzen.</span></div>
+          <div class="finegrp">Weitere Ausfälle ohne Namen (zusätzlich)</div>
+          <div class="row sm"><label for="homeAusT">Torwart</label><input type="number" id="homeAusT" value="0" min="0" max="3" step="1"></div>
+          <div class="row sm"><label for="homeAusB">Abwehr</label><input type="number" id="homeAusB" value="0" min="0" max="6" step="1"></div>
+          <div class="row sm"><label for="homeAusM">Mittelfeld</label><input type="number" id="homeAusM" value="0" min="0" max="6" step="1"></div>
+          <div class="row sm"><label for="homeAusA">Angriff</label><input type="number" id="homeAusA" value="0" min="0" max="6" step="1"></div>
+          <div class="row sm"><label for="homeAusK" title="Wie viele der oben gezählten Ausfälle sind echte Schlüsselspieler? Die zählen doppelt.">davon Schlüssel</label><input type="number" id="homeAusK" value="0" min="0" max="8" step="1"></div>
+          <div class="row sm"><label for="homeRot" title="Wichtiges Spiel in wenigen Tagen, Rotation zu erwarten">Rotation erwartet</label><input type="checkbox" id="homeRot"></div>
+          <div class="finegrp">Freie Korrektur (%)</div>
+          <div class="row sm"><label for="homeKadA" title="Alles, was die Felder oben nicht abbilden: neuer Trainer, Systemwechsel, Rückkehrer">Angriff ±%</label><input type="number" id="homeKadA" value="0" min="-40" max="40" step="1"></div>
+          <div class="row sm"><label for="homeKadD" title="Plus = mehr Gegentore erwartet">Gegentore ±%</label><input type="number" id="homeKadD" value="0" min="-40" max="40" step="1"></div>
+        </details>
       </div>
       <div class="team">
         <div class="tag"><span class="dot away"></span>Auswärts</div>
@@ -316,6 +341,23 @@
           <div class="row sm"><label for="awayFmPld">Spiele</label><input type="number" id="awayFmPld" value="0" min="0" step="1"></div>
           <div class="row sm"><label for="awayFmFor">Tore</label><input type="number" id="awayFmFor" value="0" min="0" step="1"></div>
           <div class="row sm"><label for="awayFmAg">Gegentore</label><input type="number" id="awayFmAg" value="0" min="0" step="1"></div>
+        </details>
+        <details class="fine">
+          <summary>Kader &amp; Aufstellung: Auswärts</summary>
+          <div class="finegrp">Kaderwert (Mio €, 0 = aus)</div>
+          <div class="row sm"><label for="awayWert" title="Marktwert des Kaders, z. B. von transfermarkt.de. Zählt nur im Vergleich zum Gegner und verliert mit jedem gespielten Spiel an Gewicht.">Kaderwert</label><input type="number" id="awayWert" value="0" min="0" step="1"></div>
+          <div class="finegrp">Wer fehlt? — Torschützen automatisch geholt</div>
+          <div class="spieler" id="awaySpieler"><span class="leer">Erst eine Mannschaft setzen.</span></div>
+          <div class="finegrp">Weitere Ausfälle ohne Namen (zusätzlich)</div>
+          <div class="row sm"><label for="awayAusT">Torwart</label><input type="number" id="awayAusT" value="0" min="0" max="3" step="1"></div>
+          <div class="row sm"><label for="awayAusB">Abwehr</label><input type="number" id="awayAusB" value="0" min="0" max="6" step="1"></div>
+          <div class="row sm"><label for="awayAusM">Mittelfeld</label><input type="number" id="awayAusM" value="0" min="0" max="6" step="1"></div>
+          <div class="row sm"><label for="awayAusA">Angriff</label><input type="number" id="awayAusA" value="0" min="0" max="6" step="1"></div>
+          <div class="row sm"><label for="awayAusK" title="Wie viele der oben gezählten Ausfälle sind echte Schlüsselspieler? Die zählen doppelt.">davon Schlüssel</label><input type="number" id="awayAusK" value="0" min="0" max="8" step="1"></div>
+          <div class="row sm"><label for="awayRot" title="Wichtiges Spiel in wenigen Tagen, Rotation zu erwarten">Rotation erwartet</label><input type="checkbox" id="awayRot"></div>
+          <div class="finegrp">Freie Korrektur (%)</div>
+          <div class="row sm"><label for="awayKadA" title="Alles, was die Felder oben nicht abbilden: neuer Trainer, Systemwechsel, Rückkehrer">Angriff ±%</label><input type="number" id="awayKadA" value="0" min="-40" max="40" step="1"></div>
+          <div class="row sm"><label for="awayKadD" title="Plus = mehr Gegentore erwartet">Gegentore ±%</label><input type="number" id="awayKadD" value="0" min="-40" max="40" step="1"></div>
         </details>
       </div>
     </div>
@@ -340,6 +382,11 @@
         <label for="formW">Formgewicht</label>
         <input type="range" id="formW" min="0" max="0.8" step="0.05" value="0.30">
         <span class="val" id="formWV">30 %</span>
+      </div>
+      <div class="prow">
+        <label for="kadW" title="Skaliert Ausfälle, Rotation und Kaderwert. 0 % = Kader wird ignoriert.">Kader-Einfluss</label>
+        <input type="range" id="kadW" min="0" max="1.5" step="0.05" value="1">
+        <span class="val" id="kadWV">100 %</span>
       </div>
     </div>
 
@@ -502,6 +549,7 @@
     · besseres Modell: <b>0</b>. Ein Stapeltest (Markt<sup>a</sup> · Modell<sup>b</sup>, auf alten Saisons gefittet, auf neuen geprüft) ergibt für das Modell das Gewicht <b>b = 0,00</b> — es enthält, gemessen, keine Information, die im Markt nicht schon steckt.</p>
     <p>Auch keine Nische half: nach Ausgang, nach Liga und nach Quotenhöhe aufgeschlüsselt war jede Scheibe negativ. Die Rendite fällt dabei mit steigender Quote (−1,6 % unter Quote 1,8, −20,6 % ab Quote 6).</p>
     <p>Aus diesen Messungen stammen die Voreinstellungen: Dixon-Coles ρ = −0,10, Regression K = 2, Zeitgewichtung mit 240 Tagen Halbwertszeit, Markt-Anteil 100 %. Der Test lässt sich mit <code>node tests/backtest.js</code> wiederholen.</p>
+    <p><b>Kader &amp; Aufstellung.</b> Die Torschützen holt sich das Werkzeug <b>selbst</b>: Bei den deutschen Ligen wertet es über OpenLigaDB jedes einzelne Tor der Saison aus und rechnet je Spieler seinen Anteil an den Mannschaftstoren aus; bei allen anderen liest es die Torschützenliste des Wikipedia-Saisonartikels. Sobald du eine Mannschaft setzt, stehen die Spieler als Knöpfe da — antippen heißt „fehlt heute“, und wie schwer das wiegt, sagt seine Torquote, nicht dein Gefühl: Wer 30 % der Mannschaftstore schießt, kostet beim Ausfall rund 13 % Torerwartung. Wer <b>tatsächlich verletzt oder gesperrt</b> ist, kann das Werkzeug nicht wissen — dafür gibt es keine frei zugängliche, strukturierte Quelle, und die Aufstellung steht erst rund eine Stunde vor Anpfiff fest. Antippen musst du also selbst. Dazu kommen Zähler für Ausfälle ohne Namen (Torwart, Abwehr, Mittelfeld, Angriff), davon wie viele Schlüsselspieler, erwartete Rotation, ein Kaderwert in Millionen und eine freie Prozent-Korrektur. Ausfälle werden gegen einen durchschnittlichen Ersatzmann gerechnet, nicht gegen niemanden: Bei einem namentlich bekannten Torschützen fängt die Mannschaft 55 % seines Beitrags auf, bei den namenlosen Zählern kostet ein fehlender Stammstürmer rund 7 % Torerwartung, ein fehlender Stammtorwart rund 5 % auf der Gegenseite, Schlüsselspieler zählen doppelt. In der Summe gedeckelt bei −25 % Angriff und +30 % Gegentore. Der Kaderwert zählt nur im Vergleich der beiden Mannschaften und verliert Gewicht mit jedem gespielten Spiel: zu Saisonbeginn sagt er mehr als drei Ergebnisse, im April ist es umgekehrt. <b>Ehrlich dazu:</b> Zwei Grenzen. Erstens sind diese Zahlen nicht rückwärts getestet, weil es keine frei zugänglichen Aufstellungs- und Ausfalldaten für 25.819 Partien gibt — sie stammen aus Größenordnungen der Literatur. Zweitens ist die Torschützenliste je nach Quelle unterschiedlich vollständig: für die deutschen Ligen steht praktisch jeder Torschütze jeder Mannschaft da, für alle anderen führt Wikipedia nur die besten Schützen der ganzen Liga — oft bleiben davon je Mannschaft nur ein bis zwei übrig. Wer nicht in der Liste steht, geht über die Zähler. Der Regler „Kader-Einfluss“ skaliert alles, 0 % schaltet es ab. Und: bei Markt-Anteil 100 % zeigt Abschnitt 3 nur die Quote, die Kader-Angaben wirken dann erst, wenn der Regler nach links geht.</p>
     <p><b>Der einzige gemessene Weg ins Plus</b> braucht gar kein eigenes Modell: die Quote des schärfsten Buchmachers (Pinnacle) als Wahrheit nehmen und nur dort wetten, wo ein gewöhnlicher Buchmacher spürbar mehr zahlt. Am selben Datensatz: <b>+2,6 % flach, +9,3 % nach Kelly</b> bei Schwelle +2 %, positiv in fünf von sechs Saisons. So geht es mit diesem Werkzeug: die Pinnacle-Quoten kurz vor Anpfiff in Abschnitt 6 eintragen, Markt-Anteil auf 100 % lassen — Abschnitt 5 zeigt dann je Ausgang die Mindestquote (fair + Puffer). Nur wetten, wenn dein Buchmacher darüber liegt. Zwei Haken, beide ernst: Die Schlussquote gibt es erst Minuten vor dem Spiel, und Buchmacher schränken Konten ein, die so gewinnen — oft nach Wochen. Es ist ein messbarer, kleiner, mühsamer Vorteil, kein Geldautomat.</p>
     <p><b>Vorbehalt.</b> Der Buchmacher hat 4–7 % Marge eingebaut; die muss ein Modell erst schlagen, bevor Value überhaupt beginnt. Ein Poisson-Modell — auch ein gut gebautes — schafft das nicht zuverlässig. Die Ausgabe ist ein Denkwerkzeug zur Einschätzung von Quoten, kein Tippgeber. Ohne bestandenen Test im Journal sollte kein Geld nach den Ausgaben gesetzt werden.</p>
     <p>Keine Anlage- oder Wettberatung. Wetten kann süchtig machen — Hilfe: www.bundesweit-gegen-gluecksspielsucht.de</p>
@@ -519,49 +567,49 @@ const LEAGUES=[
   {id:"uecl",de:"Conference League",en:"UEFA Conference League league phase",wiki:"{S} UEFA Conference League league phase",sy:1,str:1.00,ep:1},
  ]},
  {g:"Deutschsprachig",items:[
-  {id:"bl1",de:"Bundesliga",cc:"DE",en:"Bundesliga",wiki:"{S} Bundesliga",sy:1,str:1.15,ol:"bl1"},
-  {id:"bl2",de:"2. Bundesliga",cc:"DE",en:"2. Bundesliga",wiki:"{S} 2. Bundesliga",sy:1,str:0.96,ol:"bl2"},
+  {id:"bl1",de:"Bundesliga",cc:"DE",en:"Bundesliga",wiki:"{S} Bundesliga",sy:1,str:1.15,ol:"bl1",unter:"bl2"},
+  {id:"bl2",de:"2. Bundesliga",cc:"DE",en:"2. Bundesliga",wiki:"{S} 2. Bundesliga",sy:1,str:0.96,ol:"bl2",unter:"bl3"},
   {id:"bl3",de:"3. Liga",cc:"DE",en:"3. Liga",wiki:"{S} 3. Liga",sy:1,str:0.85,ol:"bl3"},
-  {id:"at1",de:"Bundesliga",cc:"AT",en:"Austrian Football Bundesliga",wiki:"{S} Austrian Football Bundesliga",sy:1,str:0.88},
+  {id:"at1",de:"Bundesliga",cc:"AT",en:"Austrian Football Bundesliga",wiki:"{S} Austrian Football Bundesliga",sy:1,str:0.88,unter:"at2"},
   {id:"at2",de:"2. Liga",cc:"AT",en:"Austrian Football Second League",wiki:"{S} Austrian Football Second League",sy:1,str:0.72},
-  {id:"ch1",de:"Super League",cc:"CH",en:"Swiss Super League",wiki:"{S} Swiss Super League",sy:1,str:0.93},
+  {id:"ch1",de:"Super League",cc:"CH",en:"Swiss Super League",wiki:"{S} Swiss Super League",sy:1,str:0.93,unter:"ch2"},
   {id:"ch2",de:"Challenge League",cc:"CH",en:"Swiss Challenge League",wiki:"{S} Swiss Challenge League",sy:1,str:0.76},
  ]},
  {g:"England",items:[
-  {id:"epl",de:"Premier League",cc:"EN",en:"Premier League",wiki:"{S} Premier League",sy:1,str:1.30},
-  {id:"efl",de:"Championship",cc:"EN",en:"EFL Championship",wiki:"{S} EFL Championship",sy:1,str:1.08},
-  {id:"el1",de:"League One",cc:"EN",en:"EFL League One",wiki:"{S} EFL League One",sy:1,str:0.90},
-  {id:"el2",de:"League Two",cc:"EN",en:"EFL League Two",wiki:"{S} EFL League Two",sy:1,str:0.80},
+  {id:"epl",de:"Premier League",cc:"EN",en:"Premier League",wiki:"{S} Premier League",sy:1,str:1.30,unter:"efl"},
+  {id:"efl",de:"Championship",cc:"EN",en:"EFL Championship",wiki:"{S} EFL Championship",sy:1,str:1.08,unter:"el1"},
+  {id:"el1",de:"League One",cc:"EN",en:"EFL League One",wiki:"{S} EFL League One",sy:1,str:0.90,unter:"el2"},
+  {id:"el2",de:"League Two",cc:"EN",en:"EFL League Two",wiki:"{S} EFL League Two",sy:1,str:0.80,unter:"ent"},
   {id:"ent",de:"National League",cc:"EN",en:"National League (division)",wiki:"{S} National League (division)",sy:1,str:0.74},
  ]},
  {g:"Spanien &amp; Portugal",items:[
-  {id:"esp",de:"La Liga",cc:"ES",en:"La Liga",wiki:"{S} La Liga",sy:1,str:1.18},
+  {id:"esp",de:"La Liga",cc:"ES",en:"La Liga",wiki:"{S} La Liga",sy:1,str:1.18,unter:"esp2"},
   {id:"esp2",de:"Segunda División",cc:"ES",en:"Segunda División",wiki:"{S} Segunda División",sy:1,str:0.94},
-  {id:"por",de:"Primeira Liga",cc:"PT",en:"Primeira Liga",wiki:"{S} Primeira Liga",sy:1,str:1.10},
+  {id:"por",de:"Primeira Liga",cc:"PT",en:"Primeira Liga",wiki:"{S} Primeira Liga",sy:1,str:1.10,unter:"por2"},
   {id:"por2",de:"Liga Portugal 2",cc:"PT",en:"Liga Portugal 2",wiki:"{S} Liga Portugal 2",sy:1,str:0.86},
  ]},
  {g:"Italien &amp; Frankreich",items:[
-  {id:"ita",de:"Serie A",cc:"IT",en:"Serie A",wiki:"{S} Serie A",sy:1,str:1.22},
+  {id:"ita",de:"Serie A",cc:"IT",en:"Serie A",wiki:"{S} Serie A",sy:1,str:1.22,unter:"ita2"},
   {id:"ita2",de:"Serie B",cc:"IT",en:"Serie B",wiki:"{S} Serie B",sy:1,str:0.98},
-  {id:"fra",de:"Ligue 1",cc:"FR",en:"Ligue 1",wiki:"{S} Ligue 1",sy:1,str:1.12},
-  {id:"fra2",de:"Ligue 2",cc:"FR",en:"Ligue 2",wiki:"{S} Ligue 2",sy:1,str:0.94},
+  {id:"fra",de:"Ligue 1",cc:"FR",en:"Ligue 1",wiki:"{S} Ligue 1",sy:1,str:1.12,unter:"fra2"},
+  {id:"fra2",de:"Ligue 2",cc:"FR",en:"Ligue 2",wiki:"{S} Ligue 2",sy:1,str:0.94,unter:"fra3"},
   {id:"fra3",de:"National",cc:"FR",en:"Championnat National",wiki:"{S} Championnat National",sy:1,str:0.81},
  ]},
  {g:"West- &amp; Nordeuropa",items:[
-  {id:"ned",de:"Eredivisie",cc:"NL",en:"Eredivisie",wiki:"{S} Eredivisie",sy:1,str:1.06},
+  {id:"ned",de:"Eredivisie",cc:"NL",en:"Eredivisie",wiki:"{S} Eredivisie",sy:1,str:1.06,unter:"ned2"},
   {id:"ned2",de:"Eerste Divisie",cc:"NL",en:"Eerste Divisie",wiki:"{S} Eerste Divisie",sy:1,str:0.85},
-  {id:"bel",de:"Pro League",cc:"BE",en:"Belgian Pro League",wiki:"{S} Belgian Pro League",sy:1,str:1.08},
+  {id:"bel",de:"Pro League",cc:"BE",en:"Belgian Pro League",wiki:"{S} Belgian Pro League",sy:1,str:1.08,unter:"bel2"},
   {id:"bel2",de:"Challenger Pro League",cc:"BE",en:"Challenger Pro League",wiki:"{S} Challenger Pro League",sy:1,str:0.86},
-  {id:"sco",de:"Premiership",cc:"SC",en:"Scottish Premiership",wiki:"{S} Scottish Premiership",sy:1,str:0.89},
+  {id:"sco",de:"Premiership",cc:"SC",en:"Scottish Premiership",wiki:"{S} Scottish Premiership",sy:1,str:0.89,unter:"sco2"},
   {id:"sco2",de:"Championship",cc:"SC",en:"Scottish Championship",wiki:"{S} Scottish Championship",sy:1,str:0.74},
   {id:"irl",de:"Premier Division",cc:"IE",en:"League of Ireland Premier Division",wiki:"{S} League of Ireland Premier Division",sy:0,str:0.75},
   {id:"nir",de:"NIFL Premiership",cc:"NI",en:"NIFL Premiership",wiki:"{S} NIFL Premiership",sy:1,str:0.59},
   {id:"wal",de:"Cymru Premier",cc:"WA",en:"Cymru Premier",wiki:"{S} Cymru Premier",sy:1,str:0.56},
-  {id:"den",de:"Superliga",cc:"DK",en:"Danish Superliga",wiki:"{S} Danish Superliga",sy:1,str:0.97},
+  {id:"den",de:"Superliga",cc:"DK",en:"Danish Superliga",wiki:"{S} Danish Superliga",sy:1,str:0.97,unter:"den2"},
   {id:"den2",de:"1. Division",cc:"DK",en:"Danish 1st Division",wiki:"{S} Danish 1st Division",sy:1,str:0.79},
-  {id:"nor",de:"Eliteserien",cc:"NO",en:"Eliteserien",wiki:"{S} Eliteserien",sy:0,str:0.96},
+  {id:"nor",de:"Eliteserien",cc:"NO",en:"Eliteserien",wiki:"{S} Eliteserien",sy:0,str:0.96,unter:"nor2"},
   {id:"nor2",de:"OBOS-ligaen",cc:"NO",en:"Norwegian First Division",wiki:"{S} Norwegian First Division",sy:0,str:0.80},
-  {id:"swe",de:"Allsvenskan",cc:"SE",en:"Allsvenskan",wiki:"{S} Allsvenskan",sy:0,str:0.90},
+  {id:"swe",de:"Allsvenskan",cc:"SE",en:"Allsvenskan",wiki:"{S} Allsvenskan",sy:0,str:0.90,unter:"swe2"},
   {id:"swe2",de:"Superettan",cc:"SE",en:"Superettan",wiki:"{S} Superettan",sy:0,str:0.75},
   {id:"fin",de:"Veikkausliiga",cc:"FI",en:"Veikkausliiga",wiki:"{S} Veikkausliiga",sy:0,str:0.70},
   {id:"isl",de:"Besta deild",cc:"IS",en:"Besta deild karla",wiki:"{S} Besta deild karla",sy:0,str:0.76},
@@ -569,9 +617,9 @@ const LEAGUES=[
   {id:"lux",de:"National Division",cc:"LU",en:"Luxembourg National Division",wiki:"{S} Luxembourg National Division",sy:1,str:0.57},
  ]},
  {g:"Ost- &amp; Südosteuropa",items:[
-  {id:"cze",de:"Fortuna Liga",cc:"CZ",en:"Czech First League",wiki:"{S} Czech First League",sy:1,str:1.02},
+  {id:"cze",de:"Fortuna Liga",cc:"CZ",en:"Czech First League",wiki:"{S} Czech First League",sy:1,str:1.02,unter:"cze2"},
   {id:"cze2",de:"FNL",cc:"CZ",en:"Czech National Football League",wiki:"{S} Czech National Football League",sy:1,str:0.84},
-  {id:"pol",de:"Ekstraklasa",cc:"PL",en:"Ekstraklasa",wiki:"{S} Ekstraklasa",sy:1,str:1.00},
+  {id:"pol",de:"Ekstraklasa",cc:"PL",en:"Ekstraklasa",wiki:"{S} Ekstraklasa",sy:1,str:1.00,unter:"pol2"},
   {id:"pol2",de:"I liga",cc:"PL",en:"I liga",wiki:"{S} I liga",sy:1,str:0.85},
   {id:"svk",de:"Niké liga",cc:"SK",en:"Slovak First Football League",wiki:"{S} Slovak First Football League",sy:1,str:0.80},
   {id:"hun",de:"NB I",cc:"HU",en:"Nemzeti Bajnokság I",wiki:"{S} Nemzeti Bajnokság I",sy:1,str:0.92},
@@ -585,9 +633,9 @@ const LEAGUES=[
   {id:"alb",de:"Kategoria Superiore",cc:"AL",en:"Kategoria Superiore",wiki:"{S} Kategoria Superiore",sy:1,str:0.65},
   {id:"kos",de:"Superliga",cc:"XK",en:"Football Superleague of Kosovo",wiki:"{S} Football Superleague of Kosovo",sy:1,str:0.73},
   {id:"mne",de:"Prva CFL",cc:"ME",en:"Montenegrin First League",wiki:"{S} Montenegrin First League",sy:1,str:0.57},
-  {id:"gre",de:"Super League",cc:"GR",en:"Super League Greece",wiki:"{S} Super League Greece",sy:1,str:0.99},
+  {id:"gre",de:"Super League",cc:"GR",en:"Super League Greece",wiki:"{S} Super League Greece",sy:1,str:0.99,unter:"gre2"},
   {id:"gre2",de:"Super League 2",cc:"GR",en:"Super League Greece 2",wiki:"{S} Super League Greece 2",sy:1,str:0.77},
-  {id:"tur",de:"Süper Lig",cc:"TR",en:"Süper Lig",wiki:"{S} Süper Lig",sy:1,str:1.04},
+  {id:"tur",de:"Süper Lig",cc:"TR",en:"Süper Lig",wiki:"{S} Süper Lig",sy:1,str:1.04,unter:"tur2"},
   {id:"tur2",de:"1. Lig",cc:"TR",en:"TFF First League",wiki:"{S} TFF First League",sy:1,str:0.83},
   {id:"ukr",de:"Premier Liha",cc:"UA",en:"Ukrainian Premier League",wiki:"{S} Ukrainian Premier League",sy:1,str:0.84},
   {id:"rus",de:"Premjer-Liga",cc:"RU",en:"Russian Premier League",wiki:"{S} Russian Premier League",sy:1,str:1.00},
@@ -611,12 +659,12 @@ const LEAGUES=[
   {id:"mls",de:"MLS",cc:"US",en:"Major League Soccer season",wiki:"{S} Major League Soccer season",sy:0,str:0.95},
   {id:"usl",de:"USL Championship",cc:"US",en:"USL Championship season",wiki:"{S} USL Championship season",sy:0,str:0.82},
   {id:"can",de:"Canadian Premier League",cc:"CA",en:"Canadian Premier League season",wiki:"{S} Canadian Premier League season",sy:0,str:0.78},
-  {id:"mex",de:"Liga MX",cc:"MX",en:"Liga MX season",wiki:"{S} Liga MX season",sy:1,str:0.98},
+  {id:"mex",de:"Liga MX",cc:"MX",en:"Liga MX season",wiki:"{S} Liga MX season",sy:1,str:0.98,unter:"mex2"},
   {id:"mex2",de:"Liga de Expansión",cc:"MX",en:"Liga de Expansión MX season",wiki:"{S} Liga de Expansión MX season",sy:1,str:0.80},
   {id:"crc",de:"Liga FPD",cc:"CR",en:"Liga FPD",wiki:"{S} Liga FPD",sy:1,str:0.80},
-  {id:"bra",de:"Série A",cc:"BR",en:"Campeonato Brasileiro Série A",wiki:"{S} Campeonato Brasileiro Série A",sy:0,str:1.02},
+  {id:"bra",de:"Série A",cc:"BR",en:"Campeonato Brasileiro Série A",wiki:"{S} Campeonato Brasileiro Série A",sy:0,str:1.02,unter:"bra2"},
   {id:"bra2",de:"Série B",cc:"BR",en:"Campeonato Brasileiro Série B",wiki:"{S} Campeonato Brasileiro Série B",sy:0,str:0.88},
-  {id:"arg",de:"Primera División",cc:"AR",en:"Argentine Primera División",wiki:"{S} Argentine Primera División",sy:0,str:1.00},
+  {id:"arg",de:"Primera División",cc:"AR",en:"Argentine Primera División",wiki:"{S} Argentine Primera División",sy:0,str:1.00,unter:"arg2"},
   {id:"arg2",de:"Primera Nacional",cc:"AR",en:"Primera Nacional",wiki:"{S} Primera Nacional",sy:0,str:0.84},
   {id:"chi",de:"Primera División",cc:"CL",en:"Chilean Primera División",wiki:"{S} Chilean Primera División",sy:0,str:0.88},
   {id:"col",de:"Primera A",cc:"CO",en:"Categoría Primera A season",wiki:"{S} Categoría Primera A season",sy:0,str:0.92},
@@ -628,9 +676,9 @@ const LEAGUES=[
   {id:"ven",de:"Liga FUTVE",cc:"VE",en:"Liga FUTVE",wiki:"{S} Liga FUTVE",sy:0,str:0.80},
  ]},
  {g:"Asien &amp; Ozeanien",items:[
-  {id:"jpn",de:"J1 League",cc:"JP",en:"J1 League",wiki:"{S} J1 League",sy:1,str:0.98},
+  {id:"jpn",de:"J1 League",cc:"JP",en:"J1 League",wiki:"{S} J1 League",sy:1,str:0.98,unter:"jpn2"},
   {id:"jpn2",de:"J2 League",cc:"JP",en:"J2 League",wiki:"{S} J2 League",sy:1,str:0.84},
-  {id:"kor",de:"K League 1",cc:"KR",en:"K League 1",wiki:"{S} K League 1",sy:0,str:0.94},
+  {id:"kor",de:"K League 1",cc:"KR",en:"K League 1",wiki:"{S} K League 1",sy:0,str:0.94,unter:"kor2"},
   {id:"kor2",de:"K League 2",cc:"KR",en:"K League 2",wiki:"{S} K League 2",sy:0,str:0.80},
   {id:"chn",de:"Super League",cc:"CN",en:"Chinese Super League",wiki:"{S} Chinese Super League",sy:0,str:0.88},
   {id:"aus",de:"A-League Men",cc:"AU",en:"A-League Men",wiki:"{S} A-League Men",sy:1,str:0.88},
@@ -710,6 +758,81 @@ function shrink(raw,pld,K){
 function kelly(p,o,frac,cap){
   const f=(p*o-1)/(o-1);
   return clamp(f*frac,0,cap);
+}
+
+// ---- Kader & Aufstellung ----
+// Ein fehlender Spieler wird nicht durch niemanden ersetzt, sondern durch den
+// naechstbesten aus demselben Kader. Die Zahlen unten sind deshalb der Verlust
+// gegenueber diesem Ersatzmann, nicht der Gesamtbeitrag des Spielers.
+// Groessenordnung aus der Literatur zu Ausfaellen: ein fehlender Stammstuermer
+// kostet wenige Prozent Torerwartung, ein fehlender Stammtorwart kostet
+// aehnlich viel auf der Gegenseite. Kein Rueckwaertstest — dafuer fehlen frei
+// zugaengliche Aufstellungsdaten. Der Regler "Kader-Einfluss" skaliert alles.
+const AUSFALL={
+  tor:{atk:0.00,def:0.05},
+  abw:{atk:0.01,def:0.05},
+  mit:{atk:0.04,def:0.03},
+  ang:{atk:0.07,def:0.01}
+};
+const KAD_CAP_A=0.25, KAD_CAP_D=0.30;   // Deckel: eine lange Ausfallliste darf nicht entgleisen
+const KAD_ROT_A=0.04, KAD_ROT_D=0.04;   // erwartete Rotation (wichtiges Spiel in wenigen Tagen)
+const KAD_ELAST=0.35;                   // wie stark Kaderwert auf Angriff/Abwehr durchschlaegt
+const KAD_WERT_K=8;                     // nach 8 Spielen zaehlen Ergebnisse so viel wie der Kaderwert
+// So viel vom Ausfall eines namentlich bekannten Torschuetzen faengt die
+// Mannschaft auf: der Ersatzmann trifft auch, und die Tore verteilen sich neu.
+// Bei 0,55 kostet ein Stuermer mit einem Drittel der Mannschaftstore rund 15 %
+// Torerwartung — die Groessenordnung, die Untersuchungen zu Ausfaellen nennen.
+const KAD_ERSATZ=0.55;
+
+function kaderFaktor(k,gew){
+  k=k||{};
+  const g=(gew==null?1:Math.max(0,+gew||0));
+  const z=x=>{x=+x;return isFinite(x)&&x>0?x:0;};
+  const cnt={tor:z(k.tor),abw:z(k.abw),mit:z(k.mit),ang:z(k.ang)};
+  let ges=0,dA=0,dD=0;
+  Object.keys(cnt).forEach(p=>{ges+=cnt[p];dA+=cnt[p]*AUSFALL[p].atk;dD+=cnt[p]*AUSFALL[p].def;});
+  // Schluesselspieler zaehlen doppelt; sind alle Ausfaelle Schluesselspieler,
+  // verdoppelt sich der Effekt genau einmal.
+  const key=Math.min(z(k.key),ges);
+  if(ges>0){const u=1+key/ges;dA*=u;dD*=u;}
+  // Namentlich bekannte Torschuetzen bringen ihr Gewicht selbst mit: den
+  // Anteil an den Mannschaftstoren. Der Schluesselspieler-Zuschlag der
+  // Zaehler oben gilt fuer sie nicht — er waere geraten, das hier ist gemessen.
+  let namen=0;
+  const wer=[];
+  (k.spieler||[]).forEach(sp=>{
+    const a=+((sp&&sp.anteil)||0);
+    if(!(isFinite(a)&&a>0))return;
+    namen+=Math.min(a,0.6);
+    wer.push(sp.n);
+  });
+  dA+=namen*(1-KAD_ERSATZ);
+  if(k.rot){dA+=KAD_ROT_A;dD+=KAD_ROT_D;}
+  dA=Math.min(dA*g,KAD_CAP_A);
+  dD=Math.min(dD*g,KAD_CAP_D);
+  // freie Korrektur in Prozent, fuer alles, was die Kategorien nicht treffen
+  const mA=(+k.mA||0)/100, mD=(+k.mD||0)/100;
+  return {atk:clamp((1-dA)*(1+mA),0.4,1.6),
+          def:clamp((1+dD)*(1+mD),0.4,1.6),
+          ausfaelle:ges,key,rot:!!k.rot,dA,dD,mA,mD,namen,wer};
+}
+
+// Der Kaderwert wird nur im Vergleich der beiden Mannschaften genutzt: beide
+// werden am geometrischen Mittel gemessen, das Torniveau der Partie bleibt also
+// unveraendert, nur das Verhaeltnis verschiebt sich. Je mehr Spiele in der
+// Stichprobe stecken, desto weniger zaehlt er — zu Saisonbeginn sagt der Kader
+// mehr als drei Ergebnisse, im April ist es umgekehrt.
+function kaderwertFaktoren(wH,wA,pldH,pldA,gew){
+  wH=+wH;wA=+wA;
+  if(!(wH>0)||!(wA>0))return null;
+  const g=(gew==null?1:Math.max(0,+gew||0));
+  const mit=Math.sqrt(wH*wA), vH=wH/mit, vA=wA/mit;
+  const anteil=p=>KAD_WERT_K/((p>0?p:0)+KAD_WERT_K);
+  const aH=anteil(pldH), aA=anteil(pldA);
+  const eH=KAD_ELAST*aH*g, eA=KAD_ELAST*aA*g;
+  return {hAtk:Math.pow(vH,eH),hDef:Math.pow(vH,-eH),
+          aAtk:Math.pow(vA,eA),aDef:Math.pow(vA,-eA),
+          vH,vA,anteilH:aH,anteilA:aA};
 }
 
 // ============ Speicher (Artefakt-Storage oder localStorage) ============
@@ -956,6 +1079,97 @@ function matchRoster(rosterNames,teams){
   return out;
 }
 
+// ---- Torschuetzen: wer traegt wie viel zum Angriff bei ----
+// Die Saisonartikel fuehren eine Liste "Top scorers" mit Spieler, Verein und
+// Toren; OpenLigaDB liefert fuer die deutschen Ligen sogar jedes einzelne Tor.
+// Damit kommt das Gewicht eines Ausfalls aus echten Zahlen statt aus einer
+// Einschaetzung: wer ein Drittel der Mannschaftstore schiesst, fehlt anders als
+// der vierte Stuermer.
+function parseScorers(html){
+  const i=html.search(/id="Top_scorers?"/);
+  if(i<0)return null;
+  const t=html.slice(i).match(/<table[\s\S]*?<\/table>/);
+  if(!t)return null;
+  const out=[];
+  let letzte=0;
+  (t[0].match(/<tr[\s\S]*?<\/tr>/g)||[]).forEach(r=>{
+    const cells=(r.match(/<t[dh][\s\S]*?<\/t[dh]>/g)||[]).map(c=>decodeEnt(c
+      .replace(/<sup[\s\S]*?<\/sup>/g,"").replace(/<style[\s\S]*?<\/style>/g,"")
+      .replace(/<[^>]*>/g," ")).replace(/\[[^\]]*\]/g,"").replace(/\s+/g," ").trim());
+    // Von hinten lesen. Bei geteilten Plaetzen stehen Rang UND Torzahl per
+    // rowspan in der Zeile darueber — solche Zeilen haben nur noch Spieler und
+    // Verein und wuerden sonst verlorengehen.
+    let spieler,klub,tore;
+    if(cells.length>=3&&/^\d+$/.test(cells[cells.length-1])){
+      tore=+cells[cells.length-1];klub=cells[cells.length-2];spieler=cells[cells.length-3];
+      letzte=tore;
+    }else if(cells.length===2&&letzte>0){
+      spieler=cells[0];klub=cells[1];tore=letzte;
+    }else return;
+    if(!spieler||!klub||/^\d+$/.test(spieler)||/^\d+$/.test(klub))return;
+    // "Bournemouth / Manchester City": im Winter gewechselt. Die Torzahl ist
+    // die Saisonsumme aus beiden Vereinen und laesst sich nicht aufteilen —
+    // ein solcher Eintrag wuerde bei jedem der beiden Klubs falsch zaehlen,
+    // deshalb faellt er lieber ganz weg.
+    if(klub.indexOf("/")>=0)return;
+    out.push({n:spieler,k:klub,g:tore});
+  });
+  return out.length>=3?out:null;
+}
+function ohneAkzent(s){
+  try{return String(s).normalize("NFD").replace(/[̀-ͯ]/g,"");}catch(_){return String(s);}
+}
+function spielerTeile(n){
+  const w=ohneAkzent(n).toLowerCase().replace(/[.]/g," ").replace(/\s+/g," ").trim().split(" ");
+  return {nach:w[w.length-1],vor:w.length>1?w[0]:""};
+}
+// "H. Kane", "Harry Kane" und "Kane" sind derselbe Spieler — OpenLigaDB
+// schreibt denselben Namen von Spiel zu Spiel unterschiedlich. Zusammengefasst
+// wird nur bei gleichem Nachnamen und passendem Vornamen; bleibt es
+// mehrdeutig, bleiben die Eintraege lieber getrennt.
+function mergeScorers(list){
+  const out=[];
+  (list||[]).forEach(s=>{
+    if(!s||!s.n)return;
+    const k=spielerTeile(s.n);
+    const treffer=out.filter(o=>{
+      const p=spielerTeile(o.n);
+      if(p.nach!==k.nach)return false;
+      if(!p.vor||!k.vor)return true;
+      if(p.vor===k.vor)return true;
+      return p.vor.charAt(0)===k.vor.charAt(0)&&(p.vor.length===1||k.vor.length===1);
+    });
+    if(treffer.length===1){
+      const o=treffer[0];
+      o.g+=s.g;
+      if(String(s.n).length>String(o.n).length)o.n=s.n;   // die ausgeschriebene Schreibweise gewinnt
+    }else{
+      out.push({n:s.n,g:s.g});
+    }
+  });
+  return out.sort((a,b)=>b.g-a.g);
+}
+// Ordnet eine Torschuetzenliste mit Vereinsspalte den Mannschaften der Tabelle
+// zu — dieselbe Kennwort-Logik wie beim Teilnehmerfeld.
+function scorersNachTeam(liste,teams){
+  if(!liste||!liste.length||!teams||!teams.length)return null;
+  const norm=s=>String(s).toLowerCase().replace(/\s+/g," ").trim();
+  const byExact={};teams.forEach(t=>{byExact[norm(t.name)]=t.name;});
+  const tc={};teams.forEach(t=>nameTokens(t.name).forEach(w=>tc[w]=(tc[w]||0)+1));
+  const out={};
+  liste.forEach(s=>{
+    let nm=byExact[norm(s.k)];
+    if(!nm){
+      const key=nameTokens(s.k).filter(w=>tc[w]===1)[0];
+      if(key){const hit=teams.filter(t=>nameTokens(t.name).indexOf(key)>=0)[0];if(hit)nm=hit.name;}
+    }
+    if(!nm)return;
+    (out[nm]=out[nm]||[]).push({n:s.n,g:s.g});
+  });
+  Object.keys(out).forEach(k=>{out[k]=mergeScorers(out[k]).slice(0,14);});
+  return Object.keys(out).length?out:null;
+}
+
 // ============ Einzelspiele aus der Ergebnis-Kreuztabelle ============
 // Die Saisonartikel enthalten eine Matrix "Heim \ Auswärts" mit jedem Ergebnis.
 // Daraus laesst sich die Staerke jeder Mannschaft gegen die tatsaechlich
@@ -1135,7 +1349,8 @@ async function loadWiki(title){
       else teams.forEach(t=>{delete t.atk;delete t.def;delete t.fitPld;});
     }
   }
-  return {teams,fit,roster,article:(j.parse&&j.parse.title)||title};
+  const scorers=scorersNachTeam(parseScorers(typeof src==="string"?src:(src&&src["*"])||""),teams);
+  return {teams,fit,roster,scorers,article:(j.parse&&j.parse.title)||title};
 }
 
 // ============ OpenLigaDB (frei, ohne Schlüssel) ============
@@ -1151,6 +1366,14 @@ async function loadOpenLiga(shortcut,year){
   if(!Array.isArray(j))throw new Error("OpenLigaDB: unerwartete Antwort");
   const namen=[],ix={},roh=[];
   let neuste=0;
+  // Der Spielplan nennt die Teilnehmer der Saison, lange bevor ein Spiel
+  // beendet ist — das ist die Quelle für Auf- und Absteiger.
+  const roster=[];
+  j.forEach(m=>{
+    if(m&&m.team1&&m.team2)[m.team1.teamName,m.team2.teamName].forEach(n=>{
+      if(n&&roster.indexOf(n)<0)roster.push(n);
+    });
+  });
   j.forEach(m=>{
     if(!m||!m.matchIsFinished||!m.team1||!m.team2)return;
     const e=(m.matchResults||[]).filter(x=>x.resultTypeID===2)[0];
@@ -1163,7 +1386,30 @@ async function loadOpenLiga(shortcut,year){
     roh.push({h:ix[m.team1.teamName],a:ix[m.team2.teamName],
       gh:+e.pointsTeam1,ga:+e.pointsTeam2,ts:ts});
   });
-  if(namen.length<4||roh.length<namen.length)throw new Error("OpenLigaDB: Saison noch ohne Spiele");
+  // Jedes einzelne Tor mit Schütze und Verein — die genaueste Quelle für das
+  // Gewicht eines Ausfalls, die es ohne Schlüssel gibt. Eigentore zählen nicht
+  // zum Angriff dessen, der sie geschossen hat.
+  const rohTore={};
+  j.forEach(m=>{
+    if(!m||!m.matchIsFinished||!m.team1||!m.team2)return;
+    (m.goals||[]).forEach(g=>{
+      if(!g||g.isOwnGoal||!g.goalGetterName)return;
+      let team=null;
+      if(g.scoringTeamId===m.team1.teamId)team=m.team1.teamName;
+      else if(g.scoringTeamId===m.team2.teamId)team=m.team2.teamName;
+      if(!team)return;
+      (rohTore[team]=rohTore[team]||[]).push({n:g.goalGetterName,g:1});
+    });
+  });
+  let scorers=null;
+  Object.keys(rohTore).forEach(t=>{
+    scorers=scorers||{};
+    scorers[t]=mergeScorers(rohTore[t]).slice(0,14);
+  });
+  if(namen.length<4||roh.length<namen.length){
+    // noch nichts gespielt: wenigstens das Teilnehmerfeld zurückgeben
+    return {teams:[],fit:null,roster:roster.length>=4?roster:null,scorers};
+  }
   // Tabelle aus den Einzelspielen aufbauen
   const teams=namen.map(n=>({name:n,pld:0,gf:0,ga:0}));
   roh.forEach(m=>{
@@ -1181,7 +1427,51 @@ async function loadOpenLiga(shortcut,year){
     teams.forEach((t,i)=>{t.atk=f.atk[i];t.def=f.def[i];});
     fit={games:roh.length,adv:f.adv,zeitgewichtet:true};
   }
-  return {teams:teams.filter(t=>t.pld>0),fit};
+  return {teams:teams.filter(t=>t.pld>0),fit,roster:roster.length>=4?roster:null,scorers};
+}
+
+// Werte einer Mannschaft aus der Liga darunter auf diese Liga umrechnen.
+// Wer in der zweiten Liga viel trifft, trifft oben weniger — und wer dort
+// wenig kassiert, kassiert oben mehr. Der Ligastärke-Faktor macht genau das.
+function ausUnterliga(t,avgUnten,strUnten,avgOben,strOben){
+  if(!(t.pld>0)||!(avgUnten>0)||!(avgOben>0)||!(strUnten>0)||!(strOben>0))return null;
+  const v=strUnten/strOben;
+  const angriff=(t.gf/t.pld)/avgUnten*v;          // relativ zur neuen Liga
+  const abwehr =(t.ga/t.pld)/avgUnten/v;
+  return {name:t.name,pld:t.pld,
+    gf:Math.round(angriff*avgOben*t.pld*100)/100,
+    ga:Math.round(abwehr *avgOben*t.pld*100)/100,
+    ausUnterliga:true};
+}
+
+// Ligaschnitt: Tore je Mannschaft und Spiel
+function schnitt(teams){
+  let g=0,p=0;
+  teams.forEach(t=>{if(t.pld>0){g+=t.gf;p+=t.pld;}});
+  return p>0?g/p:1.4;
+}
+// Schlanker Lader fuer die Liga darunter: nur die Tabelle der zuletzt
+// abgeschlossenen Saison, ohne Teilnehmer-Verschmelzung (keine Rekursion).
+async function ligaHolen(L){
+  if(L.ol){
+    const y=seasonStartYear();
+    for(const yr of [y-1,y]){
+      try{
+        const o=await loadOpenLiga(L.ol,yr);
+        if(o.teams.length>=4)return {teams:o.teams,season:yr+"/"+String(yr+1).slice(2)};
+      }catch(_){}
+    }
+  }
+  const c=seasonCands(L.sy);
+  for(const sa of [c[1],c[0],c[2]]){
+    if(!sa)continue;
+    try{
+      const w=await loadWiki(L.wiki.replace("{S}",sa));
+      let mx=0;w.teams.forEach(t=>{if(t.pld>mx)mx=t.pld;});
+      if(w.teams.length>=4&&mx>=3)return {teams:w.teams,season:sa};
+    }catch(_){}
+  }
+  return null;
 }
 
 // ============ Tabellen-Parser ============
@@ -1284,16 +1574,24 @@ async function loadTable(L){
   const step=t=>showStatus("info","<b>"+esc(L.de)+"</b> — "+t+" …"+stand
     +(errs.length?'<br><span style="color:var(--faint)">'+errs.map(x=>"· "+esc(x)).join("<br>")+'</span>':""));
 
+  let roster=null,rosterSeason=null;
   if(L.ol){
     const y=seasonStartYear();
     for(const yr of [y,y-1]){
+      const sais=yr+"/"+String(yr+1).slice(2);
       try{
-        step("OpenLigaDB, Saison "+yr+"/"+String(yr+1).slice(2));
+        step("OpenLigaDB, Saison "+sais);
         const ol=await loadOpenLiga(L.ol,yr);
-        res={season:yr+"/"+String(yr+1).slice(2),source:"OpenLigaDB (Einzelspiele)",
-             teams:ol.teams,fit:ol.fit};
+        // Der Spielplan der neuen Saison nennt die Teilnehmer, auch ohne Ergebnisse
+        if(!roster&&ol.roster){roster=ol.roster;rosterSeason=sais;}
+        if(!ol.teams.length){
+          errs.push("OpenLigaDB "+sais+": noch nichts gespielt"
+            +(ol.roster?", Teilnehmerfeld ("+ol.roster.length+") übernommen":""));
+          continue;
+        }
+        res={season:sais,source:"OpenLigaDB (Einzelspiele)",teams:ol.teams,fit:ol.fit,scorers:ol.scorers};
         break;
-      }catch(e){errs.push("OpenLigaDB "+yr+": "+String(e.message||e).slice(0,70));}
+      }catch(e){errs.push("OpenLigaDB "+sais+": "+String(e.message||e).slice(0,70));}
     }
   }
   // Eine Tabelle nach ein, zwei Spieltagen sagt nichts. Artikeltitel und
@@ -1302,7 +1600,7 @@ async function loadTable(L){
   // Nach der erwarteten Schreibweise auch die andere versuchen: Ligen wechseln
   // gelegentlich zwischen Kalenderjahr und Übergreifsaison (J.League 2026/27).
   const alle=seasons.concat(seasonCands(L.sy?0:1));
-  let best=null,roster=null,rosterSeason=null;
+  let best=null;
   for(let i=0;i<alle.length&&!res;i++){
     const title=L.wiki.replace("{S}",alle[i]);
     try{
@@ -1311,7 +1609,7 @@ async function loadTable(L){
       if(!roster&&w.roster&&w.roster.length>=4){roster=w.roster;rosterSeason=alle[i];}
       let maxP=0;w.teams.forEach(t=>{if(t.pld>maxP)maxP=t.pld;});
       if(!w.teams.length){errs.push(title+": noch keine Tabelle"+(w.roster?", aber "+w.roster.length+" Teilnehmer":""));continue;}
-      const cand={season:alle[i],source:"Wikipedia · "+w.article,teams:w.teams,maxP,fit:w.fit};
+      const cand={season:alle[i],source:"Wikipedia · "+w.article,teams:w.teams,maxP,fit:w.fit,scorers:w.scorers};
       if(maxP>=3){res=cand;break;}
       if(!best||maxP>best.maxP)best=cand;
       errs.push(title+": erst "+maxP+" Spieltag(e) gespielt — sehe in der Vorsaison nach");
@@ -1325,9 +1623,36 @@ async function loadTable(L){
     const neu=merged.filter(t=>t.neu);
     if(merged.length-neu.length>=merged.length*0.5){
       res.teams=merged;
-      res.roster={season:rosterSeason,neu:neu.map(t=>t.name),from:res.season};
+      res.roster={season:rosterSeason,neu:neu.map(t=>t.name),from:res.season,ausUnten:[]};
       // Die je Mannschaft gefitteten Staerken bleiben gueltig und wandern in
       // matchRoster mit; nur die Aufsteiger haben keine.
+      // Fuer die Aufsteiger die echten Zahlen aus der Liga darunter holen —
+      // besser als jeder Platzhalter.
+      if(neu.length&&L.unter){
+        const U=findLeague(L.unter);
+        if(U){
+          try{
+            step("Aufsteiger nachschlagen: "+esc(U.de));
+            const u=await ligaHolen(U);
+            if(u&&u.teams.length>=4){
+              const uAvg=schnitt(u.teams), oAvg=schnitt(res.teams.filter(t=>t.pld>0));
+              neu.forEach(t=>{
+                const q=matchRoster([t.name],u.teams)[0];
+                if(!q||q.neu)return;
+                const um=ausUnterliga(q,uAvg,U.str,oAvg,L.str);
+                if(!um)return;
+                const ziel=res.teams.filter(x=>x.name===t.name)[0];
+                if(!ziel)return;
+                ziel.pld=um.pld;ziel.gf=um.gf;ziel.ga=um.ga;
+                delete ziel.neu;ziel.ausUnterliga=U.de;
+                res.roster.ausUnten.push(t.name);
+              });
+              res.roster.neu=res.roster.neu.filter(n=>res.roster.ausUnten.indexOf(n)<0);
+              res.roster.unterliga=U.de+(u.season?" "+u.season:"");
+            }
+          }catch(e){errs.push("Aufsteiger: "+String(e.message||e).slice(0,60));}
+        }
+      }
     }
   }
   // Websuche nur noch als letzter Ausweg (z. B. wenn der direkte Abruf blockiert ist)
@@ -1365,6 +1690,7 @@ async function loadTable(L){
     .map(t=>{
       const o={name:String(t.name),pld:+t.pld||0,gf:+t.gf||0,ga:+t.ga||0};
       if(t.neu)o.neu=true;
+      if(t.ausUnterliga)o.ausUnterliga=t.ausUnterliga;
       if(t.atk>0&&t.def>0){o.atk=+t.atk;o.def=+t.def;}
       return o;
     });
@@ -1372,7 +1698,7 @@ async function loadTable(L){
   const totG=teams.reduce((s,t)=>s+t.gf,0), totP=teams.reduce((s,t)=>s+t.pld,0);
   const data={ts:Date.now(),de:L.de,en:L.en,season:res.season||seasons[0],
     source:res.source||"",teams,avg:totP>0?totG/totP:1.4,str:L.str||1,
-    fit:res.fit||null,roster:res.roster||null};
+    fit:res.fit||null,roster:res.roster||null,scorers:res.scorers||null};
   await cacheSet(L.id,data);
   await markCached();
   return data;
@@ -1398,8 +1724,13 @@ function applyLeagueData(data,note){
     +" — "+leagueTeams.length+" Teams · Ligaschnitt "+data.avg.toFixed(2)+" Tore/Team/Spiel"
     +(data.source?"<br>Quelle: "+esc(data.source):"")
     +(data.roster?"<br>Teilnehmerfeld der Saison <b>"+esc(data.roster.season)+"</b>, Zahlen aus <b>"+esc(data.roster.from)+"</b> (dort ist erst gespielt worden)."
+       +((data.roster.ausUnten&&data.roster.ausUnten.length)
+          ? "<br><b style=\"color:var(--good)\">Aufsteiger mit echten Zahlen aus "+esc(data.roster.unterliga||"der Liga darunter")+": "
+            +esc(data.roster.ausUnten.join(", "))+"</b> — auf das Niveau dieser Liga umgerechnet."
+          : "")
        +(data.roster.neu.length?"<br><b style=\"color:var(--amber)\">Aufsteiger ohne Vorsaisonwerte: "+esc(data.roster.neu.join(", "))
-         +"</b> — grob geschätzt. Besser: die Zahlen aus der zweiten Liga holen und dort die Ligastärke setzen.":"<br>Alle Mannschaften haben Vorsaisonwerte."):"")
+         +"</b> — grob geschätzt, bitte prüfen."
+         :((data.roster.ausUnten&&data.roster.ausUnten.length)?"":"<br>Alle Mannschaften haben Vorsaisonwerte.")):"")
     +(data.fit?"<br>Stärken aus <b>"+data.fit.games+" Einzelspielen</b> geschätzt — die Stärke der bisherigen Gegner ist berücksichtigt."
        +(data.fit.zeitgewichtet?" Jüngere Partien zählen mehr (Halbwertszeit 240 Tage).":"")
        +"<br>Heimvorteil dieser Liga: <b>"+data.fit.adv.toFixed(2)+"</b> "
@@ -1439,6 +1770,7 @@ function fillTeamSelect(){
     const o=document.createElement("option");o.value=i;
     o.textContent=t.pld>0
       ? t.name+"  ("+(t.gf/t.pld).toFixed(2)+" / "+(t.ga/t.pld).toFixed(2)+")"
+        +(t.ausUnterliga?"  ↑ Aufsteiger":"")
       : t.name+"  (Aufsteiger — geschätzt)";
     s.appendChild(o);
   });
@@ -1456,12 +1788,15 @@ function setSlot(role){
   $(pre+"Name").value=t.name;$(pre+"For").value=gf;$(pre+"Ag").value=ga;
   $(pre+"Pld").value=t.pld;$(pre+"Avg").value=av;$(pre+"Str").value=str;
   // Feinjustierung zuruecksetzen — sie gehoert zum vorherigen Team
-  ["SpPld","SpFor","SpAg","FmPld","FmFor","FmAg"].forEach(k=>{$(pre+k).value=0;});
+  ["SpPld","SpFor","SpAg","FmPld","FmFor","FmAg",
+   "Wert","AusT","AusB","AusM","AusA","AusK","KadA","KadD"].forEach(k=>{$(pre+k).value=0;});
+  $(pre+"Rot").checked=false;
+  kaderSetzen(pre,t);
   // Gefittete Staerken uebernehmen, wenn die Liga Einzelspiele geliefert hat
   $(pre+"FitA").value=t.atk>0?t.atk.toFixed(2):0;
   $(pre+"FitD").value=t.def>0?t.def.toFixed(2):0;
   set(role==="home"?"slotH":"slotA",t.name+" — "+gf+" / "+ga+" · "
-    +(t.pld>0?t.pld+" Sp.":"Aufsteiger, geschätzt — bitte anpassen")
+    +(t.pld>0?t.pld+" Sp."+(t.ausUnterliga?" aus der "+t.ausUnterliga:""):"Aufsteiger, geschätzt — bitte anpassen")
     +" · "+leagueMeta.de+" (Stärke "+str+")"
     +(t.atk>0?" · gefittet "+t.atk.toFixed(2)+" / "+t.def.toFixed(2):""));
   recompute();
@@ -1565,6 +1900,65 @@ function updRow(id,p,cfg,newName){
 })();
 
 // ============ Stärkeberechnung ============
+// Torschuetzen je Platz. Die Liste kommt aus der geladenen Liga, angetippt wird
+// nur noch, wer heute fehlt — die Frage "wie wichtig ist der?" beantwortet der
+// Anteil an den Mannschaftstoren, nicht das Bauchgefuehl.
+const KADER={home:{liste:[],aus:{},hinweis:""},away:{liste:[],aus:{},hinweis:""}};
+function spielerRendern(role){
+  const box=$(role+"Spieler"),k=KADER[role];
+  if(!box)return;
+  if(!k.liste.length){
+    box.innerHTML='<span class="leer">'+esc(k.hinweis||"Erst eine Mannschaft setzen.")+'</span>';
+    return;
+  }
+  box.innerHTML="";
+  k.liste.forEach(s=>{
+    const b=document.createElement("button");
+    b.type="button";
+    b.className="pbtn"+(k.aus[s.n]?" on":"");
+    b.title=s.n+": "+s.g+" Tore, das sind "+Math.round(s.anteil*100)+" % der Mannschaftstore";
+    b.innerHTML=esc(s.n)+'<span class="g">'+s.g+" · "+Math.round(s.anteil*100)+"%</span>";
+    b.addEventListener("click",()=>{
+      if(k.aus[s.n])delete k.aus[s.n];else k.aus[s.n]=1;
+      spielerRendern(role);recompute();
+    });
+    box.appendChild(b);
+  });
+  // Die Wikipedia-Artikel fuehren nur die besten Schuetzen der ganzen Liga —
+  // je Mannschaft bleiben davon oft nur ein, zwei uebrig. Das gehoert gesagt,
+  // sonst haelt man eine kurze Liste fuer den vollstaendigen Kader.
+  if(k.liste.length<4){
+    const s=document.createElement("span");
+    s.className="leer";
+    s.style.width="100%";
+    s.textContent="Mehr steht in der Quelle nicht — der Artikel führt nur die besten Schützen der ganzen Liga. "
+      +"Wer hier fehlt, geht über die Zähler unten.";
+    box.appendChild(s);
+  }
+}
+// Uebernimmt die Torschuetzen der gesetzten Mannschaft in den Platz.
+function kaderSetzen(role,team){
+  const k=KADER[role];
+  k.aus={};k.liste=[];
+  const sc=(leagueMeta&&leagueMeta.scorers&&team&&leagueMeta.scorers[team.name])||null;
+  if(sc&&sc.length&&team.gf>0){
+    k.liste=sc.map(s=>({n:s.n,g:s.g,anteil:s.g/team.gf})).filter(s=>s.anteil>=0.02);
+    k.hinweis="";
+  }else{
+    k.hinweis=team&&team.ausUnterliga
+      ? "Aufsteiger — die Torschützen stehen in der Liste der Liga darunter, nicht in dieser. Nutz die Zähler unten."
+      : "Für diese Liga liegt keine Torschützenliste vor. Nutz die Zähler unten.";
+  }
+  spielerRendern(role);
+}
+// Liest die Kader-Felder einer Mannschaft aus der Oberflaeche.
+function kaderLesen(pre){
+  const cb=$(pre+"Rot"),k=KADER[pre];
+  return {tor:num(pre+"AusT"),abw:num(pre+"AusB"),mit:num(pre+"AusM"),ang:num(pre+"AusA"),
+          key:num(pre+"AusK"),rot:!!(cb&&cb.checked),
+          mA:num(pre+"KadA"),mD:num(pre+"KadD"),
+          spieler:k?k.liste.filter(s=>k.aus[s.n]):[]};
+}
 // Alle Staerken sind dimensionslos: 1,00 = Ligadurchschnitt.
 function teamStrength(pre,lgAvg,adv,K,formW,isHome){
   const lgHome=lgAvg*adv, lgAway=lgAvg/adv;
@@ -1602,28 +1996,66 @@ function recompute(){
   const hAvg=Math.max(num("homeAvg"),0.1), aAvg=Math.max(num("awayAvg"),0.1);
   const adv=parseFloat($("homeAdv").value), rho=parseFloat($("rho").value);
   const K=parseFloat($("shrinkK").value), formW=parseFloat($("formW").value);
+  const kadW=parseFloat($("kadW").value);
   const blendW=parseFloat($("blendW").value), buf=parseFloat($("buffer").value);
   set("homeAdvV",adv.toFixed(2));
   set("rhoV",(rho<0?"−":"")+Math.abs(rho).toFixed(2));
   set("shrinkKV",K.toFixed(0));
   set("formWV",Math.round(formW*100)+" %");
+  set("kadWV",Math.round(kadW*100)+" %");
   set("blendWV",Math.round(blendW*100)+" %");
   set("bufferV",Math.round(buf*100)+" %");
 
   const H=teamStrength("home",hAvg,adv,K,formW,true);
   const A=teamStrength("away",aAvg,adv,K,formW,false);
+  // Kader & Aufstellung: erst Ausfaelle/Rotation je Mannschaft, dann der
+  // Kaderwert im Vergleich der beiden.
+  const KH=kaderFaktor(kaderLesen("home"),kadW), KA=kaderFaktor(kaderLesen("away"),kadW);
+  let hAtk=H.atk*KH.atk, hDef=H.def*KH.def, aAtk=A.atk*KA.atk, aDef=A.def*KA.def;
+  const KW=kaderwertFaktoren(num("homeWert"),num("awayWert"),num("homePld"),num("awayPld"),kadW);
+  if(KW){hAtk*=KW.hAtk;hDef*=KW.hDef;aAtk*=KW.aAtk;aDef*=KW.aDef;}
   const sH=clamp(num("homeStr")||1,0.3,3), sA=clamp(num("awayStr")||1,0.3,3);
   const rel=sH/sA;
   const base=(hAvg+aAvg)/2;
-  const lamH=clamp(H.atk*rel*A.def*base*adv,0.05,8);
-  const lamA=clamp(A.atk/rel*H.def*base/adv,0.05,8);
+  const lamH=clamp(hAtk*rel*aDef*base*adv,0.05,8);
+  const lamA=clamp(aAtk/rel*hDef*base/adv,0.05,8);
   set("lamH",lamH.toFixed(2));set("lamA",lamA.toFixed(2));
 
   const notes=[];
-  notes.push("Angriff/Abwehr (1,00 = Ligaschnitt) — <b>"+esc(hName)+"</b>: "+H.atk.toFixed(2)+" / "+H.def.toFixed(2)
-    +" · <b>"+esc(aName)+"</b>: "+A.atk.toFixed(2)+" / "+A.def.toFixed(2));
+  notes.push("Angriff/Abwehr (1,00 = Ligaschnitt) — <b>"+esc(hName)+"</b>: "+hAtk.toFixed(2)+" / "+hDef.toFixed(2)
+    +" · <b>"+esc(aName)+"</b>: "+aAtk.toFixed(2)+" / "+aDef.toFixed(2));
   const mods=H.used.concat(A.used);
   if(mods.length)notes.push("Berücksichtigt: "+esc(mods.join(" · ")));
+  // Kader sichtbar machen: was der Abschnitt an den Zahlen bewegt hat
+  const kadTxt=[];
+  const kadZeile=(name,Kx,roh)=>{
+    const teile=[];
+    if(Kx.wer&&Kx.wer.length)teile.push("ohne "+Kx.wer.join(", ")
+      +" (zusammen "+Math.round(Kx.namen*100)+" % der Mannschaftstore)");
+    if(Kx.ausfaelle>0)teile.push(Kx.ausfaelle+(Kx.ausfaelle>1?" weitere Ausfälle":" weiterer Ausfall")
+      +(Kx.key>0?", davon "+Kx.key+" Schlüsselspieler":""));
+    if(Kx.rot)teile.push("Rotation erwartet");
+    if(Kx.dA>=KAD_CAP_A-1e-9||Kx.dD>=KAD_CAP_D-1e-9)teile.push("gedeckelt");
+    if(Kx.mA||Kx.mD)teile.push("freie Korrektur "
+      +(Kx.mA?(Kx.mA>0?"+":"−")+Math.round(Math.abs(Kx.mA)*100)+" % Angriff":"")
+      +(Kx.mA&&Kx.mD?", ":"")
+      +(Kx.mD?(Kx.mD>0?"+":"−")+Math.round(Math.abs(Kx.mD)*100)+" % Gegentore":""));
+    if(!teile.length)return;
+    kadTxt.push("<b>"+esc(name)+"</b>: "+esc(teile.join(" · "))
+      +" → "+roh.atk.toFixed(2)+" / "+roh.def.toFixed(2)
+      +" wird "+(roh.atk*Kx.atk).toFixed(2)+" / "+(roh.def*Kx.def).toFixed(2));
+  };
+  kadZeile(hName,KH,H);
+  kadZeile(aName,KA,A);
+  if(kadTxt.length)notes.push("Kader &amp; Aufstellung — "+kadTxt.join("<br>"));
+  if(KW){
+    const wH=num("homeWert"),wA=num("awayWert");
+    notes.push("Kaderwert "+wH+" gegen "+wA+" Mio € → Faktor <b>"+KW.hAtk.toFixed(2)+"</b> bzw. <b>"+KW.aAtk.toFixed(2)
+      +"</b> auf den Angriff (Gegenteil auf die Abwehr). Gewicht "
+      +Math.round(Math.max(KW.anteilH,KW.anteilA)*100)+" % — es sinkt mit jedem gespielten Spiel, weil Ergebnisse dann mehr sagen als der Kader.");
+  }
+  if(kadW!==1&&(kadTxt.length||KW))notes.push("Kader-Einfluss steht auf "+Math.round(kadW*100)+" %.");
+  if((kadTxt.length||KW)&&blendW>=0.999)notes.push("<span style=\"color:var(--bad)\">Der Markt-Anteil in Abschnitt 3 steht auf 100 % — angezeigt wird dort allein die Quote, deine Kader-Angaben ändern daran nichts. Zieh den Regler nach links, wenn das Modell deine Einschätzung zeigen soll.</span>");
   if(num("homePld")>0||num("awayPld")>0){
     const wH=num("homePld")>0?num("homePld")/(num("homePld")+K):1;
     const wA=num("awayPld")>0?num("awayPld")/(num("awayPld")+K):1;
@@ -1773,7 +2205,13 @@ function recompute(){
   updRow("xqh",qH,cfg,hName+" kommt weiter");
   updRow("xqa",qA,cfg,aName+" kommt weiter");
 
-  LAST={hName,aName,lamH,lamA};
+  // Fuer das Journal festhalten, was der Kader-Abschnitt bewegt hat — sonst
+  // laesst sich spaeter nicht pruefen, ob er hilft oder schadet.
+  const kadKurz=[];
+  if(KH.atk!==1||KH.def!==1)kadKurz.push("H "+KH.atk.toFixed(2)+"/"+KH.def.toFixed(2));
+  if(KA.atk!==1||KA.def!==1)kadKurz.push("A "+KA.atk.toFixed(2)+"/"+KA.def.toFixed(2));
+  if(KW)kadKurz.push("Wert "+KW.hAtk.toFixed(2)+"/"+KW.aAtk.toFixed(2));
+  LAST={hName,aName,lamH,lamA,kad:kadKurz.join(" · ")};
 }
 
 // ============ Journal ============
@@ -1794,7 +2232,7 @@ function addToJournal(nurValue){
     if(!r||!(r.o>1))return;
     if(nurValue&&!(r.ev>0))return;
     journal.push({id:Date.now()+"_"+k+"_"+n,ts:Date.now(),match,lbl:r.lbl,
-      p:r.p, p0:r.p0, pm:r.pm, o:r.o,
+      p:r.p, p0:r.p0, pm:r.pm, o:r.o, kad:(LAST&&LAST.kad)||"",
       stake:nurValue?+(r.stake||0).toFixed(2):0, res:"open"});
     n++;
   });
@@ -1812,9 +2250,9 @@ $("jClearBtn").addEventListener("click",()=>{
 $("jCsvBtn").addEventListener("click",()=>{
   const ta=$("jCsv");
   if(ta.style.display!=="none"){ta.style.display="none";return;}
-  ta.value="Datum;Spiel;Markt;Angezeigt_p;Modell_p;Markt_p;Quote;Einsatz;Ergebnis\n"+journal.map(e=>
+  ta.value="Datum;Spiel;Markt;Angezeigt_p;Modell_p;Markt_p;Quote;Einsatz;Kader;Ergebnis\n"+journal.map(e=>
     [dstr(e.ts),e.match,e.lbl,e.p.toFixed(4),(e.p0!=null?e.p0.toFixed(4):""),
-     (e.pm!=null?e.pm.toFixed(4):""),e.o.toFixed(2),e.stake.toFixed(2),e.res].join(";")).join("\n");
+     (e.pm!=null?e.pm.toFixed(4):""),e.o.toFixed(2),e.stake.toFixed(2),(e.kad||""),e.res].join(";")).join("\n");
   ta.style.display="block";
 });
 function setRes(id,res){
